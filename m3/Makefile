@@ -8,4 +8,4 @@ kernel.o: kernel.c
 	bcc -ansi -c -o kernel.o kernel.c
 
 clean:
-	rm -rf kernel kernel.o kernel_asm.o floppya.img bochsout.txt bootload  *~
+	rm -rf kernel kernel.o kernel_asm.o floppya.img bochsout.txt bootload loadFile *~
