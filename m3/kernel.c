@@ -2,12 +2,18 @@
 #include <stdio.h>
 #include "./string.h"
 
+#define SECTOR_SIZE 512
+#define DIRECTORY_RECORD_SIZE 32
+#define DIRECTORY_FILENAME_SIZE 6
+#define DIRECTORY_SECTOR_RECORD_SIZE 26
+
 void printString(char *);
 void readString(char *);
 void readSector(char *, int);
 int mod(int, int);
 int div(int, int);
 void handleInterrupt21(int, int, int, int);
+void readFile(char* fileName, char* buffer);
 
 int main()
 {
@@ -15,9 +21,11 @@ int main()
   int i;
 
   char line[80];
-  line[0] = '\0';
-  printString("Enter a line: \0");
+  char buffer[13312];  /* this is the maximum size of a file */
   makeInterrupt21();
+  interrupt(0x21, 3, "messag\0", buffer, 0);  /* read the file into buffer */
+  interrupt(0x21, 0, buffer, 0, 0);     /* print out the file */
+  printString("Enter a line: \0");
   interrupt(0x21,1,line,0,0);
   interrupt(0x21,0,line,0,0);
   while(1){}
@@ -101,7 +109,33 @@ void handleInterrupt21(int ax, int bx, int cx, int dx) {
     case 2:
       readSector(bx, cx);
       break;
+    case 3:
+      readFile(bx, cx);
+      break;
     default:
       printString("Error: What did you call it with?\r\n\0");
   }
+}
+
+void readFile(char* fileName, char* buffer) {
+  char directory[SECTOR_SIZE];
+  unsigned int i, j, k;
+
+  readSector(directory, 2);
+  for (i = 0; i < SECTOR_SIZE; i += DIRECTORY_RECORD_SIZE) {
+    if (directory[i] == 0) {
+      continue;
+    } else if (strncmp(fileName, directory + i, 6)) {
+      for (j = DIRECTORY_FILENAME_SIZE, k = 0; j < DIRECTORY_RECORD_SIZE; j++, k += SECTOR_SIZE) {
+        if (directory[i+j] == 0) {
+          return;
+        } else {
+          readSector(buffer+k, directory[i+j]);
+        }
+      }
+      return;
+    }
+  }
+  printString("File not found!\r\n");
+  return;
 }
