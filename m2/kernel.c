@@ -3,6 +3,9 @@
 
 void printString(char *);
 void readString(char *);
+void readSector(char *, int);
+int mod(int, int);
+int div(int, int);
 
 int main()
 {
@@ -17,33 +20,10 @@ int main()
   /*for(i = 0; i < 25 * 80; i++) {
     putInMemory(0xB000, start, ' ');
     start+=2;
-  }
-  putInMemory(0xB000, 0x8000, 'H');
-  putInMemory(0xB000, 0x8001, 0x7);
-  putInMemory(0xB000, 0x8002, 'E');
-  putInMemory(0xB000, 0x8003, 0x7);
-  putInMemory(0xB000, 0x8004, 'L');
-  putInMemory(0xB000, 0x8005, 0x7);
-  putInMemory(0xB000, 0x8006, 'L');
-  putInMemory(0xB000, 0x8007, 0x7);
-  putInMemory(0xB000, 0x8008, 'O');
-  putInMemory(0xB000, 0x8009, 0x7);
-
-  putInMemory(0xB000, 0x800A, ' ');
-  putInMemory(0xB000, 0x800C, 'W');
-  putInMemory(0xB000, 0x800D, 0x7);
-  putInMemory(0xB000, 0x800E, 'O');
-  putInMemory(0xB000, 0x800F, 0x7);
-  putInMemory(0xB000, 0x8010, 'R');
-  putInMemory(0xB000, 0x8011, 0x7);
-  putInMemory(0xB000, 0x8012, 'L');
-  putInMemory(0xB000, 0x8013, 0x7);
-  putInMemory(0xB000, 0x8014, 'D');
-  putInMemory(0xB000, 0x8015, 0x7);*/
-  printString("Hello world\0");
-  printString("Enter a line: \0");
-  readString(line);
-  printString(line);
+  }*/
+  char buffer[512];
+  readSector(buffer, 30);
+  printString(buffer);
   while(1){}
   return 0;
 }
@@ -90,4 +70,26 @@ void readString(char *buffer) {
         i++;
     }
   } while (1);
+}
+
+void readSector(char *buffer, int sector) {
+  int relativeSector = mod(sector, 18) + 1;
+  int head = mod(div(sector, 18), 2);
+  int track = div(sector, 36);
+  interrupt(0x13, 2*256+1, buffer, track*256+relativeSector, head*256+0);
+}
+
+int mod(int a, int b) {
+  while (a >= b) {
+    a = a - b;
+  }
+  return a;
+}
+
+int div(int a, int b) {
+  int quotient = 0;
+  while ((quotient + 1) * b <= a) {
+    quotient++;
+  }
+  return quotient;
 }
