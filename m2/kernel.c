@@ -6,6 +6,7 @@ void readString(char *);
 void readSector(char *, int);
 int mod(int, int);
 int div(int, int);
+void handleInterrupt21(int, int, int, int);
 
 int main()
 {
@@ -21,9 +22,8 @@ int main()
     putInMemory(0xB000, start, ' ');
     start+=2;
   }*/
-  char buffer[512];
-  readSector(buffer, 30);
-  printString(buffer);
+  makeInterrupt21();
+  interrupt(0x21, 0, 2, 6, 8);
   while(1){}
   return 0;
 }
@@ -92,4 +92,14 @@ int div(int a, int b) {
     quotient++;
   }
   return quotient;
+}
+
+void handleInterrupt21(int ax, int bx, int cx, int dx) {
+  char bufferToPrint[10];
+  bufferToPrint[0] = ax + 0x30;
+  bufferToPrint[1] = bx + 0x30;
+  bufferToPrint[2] = cx + 0x30;
+  bufferToPrint[3] = dx + 0x30;
+  bufferToPrint[4] = '\0';
+  printString(bufferToPrint);
 }
