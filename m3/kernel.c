@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include "./string.h"
 
 void printString(char *);
 void readString(char *);
@@ -14,6 +15,7 @@ int main()
   int i;
 
   char line[80];
+  line[0] = '\0';
   printString("Enter a line: \0");
   makeInterrupt21();
   interrupt(0x21,1,line,0,0);
