@@ -2,11 +2,14 @@
 #include <stdio.h>
 
 void printString(char *);
+void readString(char *);
 
 int main()
 {
   int start;
   int i;
+
+  char line[80];
   /*start = 0x8000;*/
   /*
   * clear the video memory
@@ -38,6 +41,9 @@ int main()
   putInMemory(0xB000, 0x8014, 'D');
   putInMemory(0xB000, 0x8015, 0x7);*/
   printString("Hello world\0");
+  printString("Enter a line: \0");
+  readString(line);
+  printString(line);
   while(1){}
   return 0;
 }
@@ -48,4 +54,40 @@ void printString(char *str) {
     interrupt(0x10, 0xe*256+str[i], 0, 0, 0);
     i++;
   }
+}
+
+void readString(char *buffer) {
+  char currentChar;
+  char bufferToPrint[3];
+  unsigned int i = 0;
+  bufferToPrint[1] = '\0';
+  do {
+    currentChar = interrupt(0x16, 0, 0, 0, 0);
+    switch (currentChar) {
+      case 0xd:
+        buffer[i] = 0xd;
+        i++;
+        buffer[i] = 0xa;
+        i++;
+        buffer[i] = 0x0;
+        i++;
+        bufferToPrint[0] = '\r';
+        bufferToPrint[1] = '\n';
+        bufferToPrint[2] = '\0';
+        printString(bufferToPrint);
+        return;
+      case 0x8:
+        bufferToPrint[0] = currentChar;
+        if (i > 0) {
+          printString(bufferToPrint);
+          i--;
+        }
+        break;
+      default:
+        buffer[i] = currentChar;
+        bufferToPrint[0] = currentChar;
+        printString(bufferToPrint);
+        i++;
+    }
+  } while (1);
 }
