@@ -1,0 +1,13 @@
+Team members: Jake Patterson, Yuzong Gao, Luwen Zhang, Zhou Zhou
+
+### Instructions for building your operating system
+$ ./compileOS
+
+### Instructions for testing and using the operating system
+$ ./compileOS
+
+### Bugs or deficiencies
+Such things do not exist
+
+### Additional features that you implemented
+None
