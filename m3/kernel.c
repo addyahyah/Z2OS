@@ -6,6 +6,7 @@
 #define DIRECTORY_RECORD_SIZE 32
 #define DIRECTORY_FILENAME_SIZE 6
 #define DIRECTORY_SECTOR_RECORD_SIZE 26
+#define MAXIMUM_FILE_SIZE 13312
 
 void printString(char *);
 void readString(char *);
@@ -14,6 +15,7 @@ int mod(int, int);
 int div(int, int);
 void handleInterrupt21(int, int, int, int);
 void readFile(char* fileName, char* buffer);
+void executeProgram(char*, int);
 
 int main()
 {
@@ -21,13 +23,9 @@ int main()
   int i;
 
   char line[80];
-  char buffer[13312];  /* this is the maximum size of a file */
+  char buffer[MAXIMUM_FILE_SIZE];
   makeInterrupt21();
-  interrupt(0x21, 3, "messag\0", buffer, 0);  /* read the file into buffer */
-  interrupt(0x21, 0, buffer, 0, 0);     /* print out the file */
-  printString("Enter a line: \0");
-  interrupt(0x21,1,line,0,0);
-  interrupt(0x21,0,line,0,0);
+  interrupt(0x21, 4, "tstprg\0", 0x2000, 0);
   while(1){}
   return 0;
 }
@@ -112,6 +110,9 @@ void handleInterrupt21(int ax, int bx, int cx, int dx) {
     case 3:
       readFile(bx, cx);
       break;
+    case 4:
+      executeProgram(bx, cx);
+      break;
     default:
       printString("Error: What did you call it with?\r\n\0");
   }
@@ -138,4 +139,21 @@ void readFile(char* fileName, char* buffer) {
   }
   printString("File not found!\r\n");
   return;
+}
+
+void executeProgram(char* name, int segment) {
+  char buffer[MAXIMUM_FILE_SIZE];
+  unsigned int i;
+  if (mod(segment, 0x1000) != 0) {
+    printString("Segment not a multiple of 0x1000\r\n");
+    return;
+  } else if (segment == 0 || segment == 0x1000 || segment > 0xA000) {
+    printString("Illegal segment\r\n");
+    return;
+  }
+  readFile(name, buffer);
+  for (i = 0; i < MAXIMUM_FILE_SIZE; i++) {
+    putInMemory(segment, i, buffer[i]);
+  }
+  launchProgram(segment);
 }
