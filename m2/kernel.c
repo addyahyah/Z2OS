@@ -14,16 +14,10 @@ int main()
   int i;
 
   char line[80];
-  /*start = 0x8000;*/
-  /*
-  * clear the video memory
-  */
-  /*for(i = 0; i < 25 * 80; i++) {
-    putInMemory(0xB000, start, ' ');
-    start+=2;
-  }*/
+  printString("Enter a line: \0");
   makeInterrupt21();
-  interrupt(0x21, 0, 2, 6, 8);
+  interrupt(0x21,1,line,0,0);
+  interrupt(0x21,0,line,0,0);
   while(1){}
   return 0;
 }
@@ -95,11 +89,17 @@ int div(int a, int b) {
 }
 
 void handleInterrupt21(int ax, int bx, int cx, int dx) {
-  char bufferToPrint[10];
-  bufferToPrint[0] = ax + 0x30;
-  bufferToPrint[1] = bx + 0x30;
-  bufferToPrint[2] = cx + 0x30;
-  bufferToPrint[3] = dx + 0x30;
-  bufferToPrint[4] = '\0';
-  printString(bufferToPrint);
+  switch (ax) {
+    case 0:
+      printString(bx);
+      break;
+    case 1:
+      readString(bx);
+      break;
+    case 2:
+      readSector(bx, cx);
+      break;
+    default:
+      printString("Error: What did you call it with?\r\n\0");
+  }
 }
