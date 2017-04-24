@@ -13,7 +13,7 @@ void readSector(char *, int);
 int mod(int, int);
 int div(int, int);
 void handleInterrupt21(int, int, int, int);
-void readFile(char* fileName, char* buffer);
+int readFile(char* fileName, char* buffer);
 void executeProgram(char*, int);
 void terminate();
 
@@ -102,6 +102,7 @@ int div(int a, int b) {
 }
 
 void handleInterrupt21(int ax, int bx, int cx, int dx) {
+  char errorMsg[36];
   switch (ax) {
     case 0:
       printString(bx);
@@ -122,7 +123,6 @@ void handleInterrupt21(int ax, int bx, int cx, int dx) {
       terminate();
       break;
     default:
-      char errorMsg[36];
       errorMsg[0] = 'E';
       errorMsg[1] = 'r';
       errorMsg[2] = 'r';
@@ -163,10 +163,10 @@ void handleInterrupt21(int ax, int bx, int cx, int dx) {
   }
 }
 
-void readFile(char* fileName, char* buffer) {
+int readFile(char* fileName, char* buffer) {
   char directory[SECTOR_SIZE];
   unsigned int i, j, k;
-  char notFound[15];
+  char notFound[17];
   readSector(directory, 2);
   for (i = 0; i < SECTOR_SIZE; i += DIRECTORY_RECORD_SIZE) {
     if (directory[i] == 0) {
@@ -174,12 +174,12 @@ void readFile(char* fileName, char* buffer) {
     } else if (strncmp(fileName, directory + i, 6)) {
       for (j = DIRECTORY_FILENAME_SIZE, k = 0; j < DIRECTORY_RECORD_SIZE; j++, k += SECTOR_SIZE) {
         if (directory[i+j] == 0) {
-          return;
+          return 0;
         } else {
           readSector(buffer+k, directory[i+j]);
         }
       }
-      return;
+      return 0;
     }
   }
   notFound[0] = 'F';
@@ -196,13 +196,17 @@ void readFile(char* fileName, char* buffer) {
   notFound[11] = 'u';
   notFound[12] = 'n';
   notFound[13] = 'd';
-  notFound[14] = '\0';
+  notFound[14] = '\r';
+  notFound[15] = '\n';
+  notFound[16] = '\0';
+
   printString(notFound);
-  return;
+  return -1;
 }
 
 void executeProgram(char* name, int segment) {
   char buffer[MAXIMUM_FILE_SIZE];
+  int result;
   unsigned int i;
   if (mod(segment, 0x1000) != 0) {
     char errorMsg[35];
@@ -264,11 +268,14 @@ void executeProgram(char* name, int segment) {
     printString(errorMsg);
     return;
   }
-  readFile(name, buffer);
-  for (i = 0; i < MAXIMUM_FILE_SIZE; i++) {
-    putInMemory(segment, i, buffer[i]);
-  }
-  launchProgram(segment);
+  result = readFile(name, buffer);
+  
+  if(result == 0){
+    for (i = 0; i < MAXIMUM_FILE_SIZE; i++) {
+      putInMemory(segment, i, buffer[i]);
+    }
+    launchProgram(segment);
+  } 
 }
 
 void terminate() {
