@@ -24,10 +24,13 @@ int main()
       filename = buffer + 8;
       cleanFilename(filename);
       interrupt(0x21, 4, filename, 0x2000, 0);
+    } else if (strncmp(buffer, "exit", 4)) {
+      return 0;
     } else {
       interrupt(0x21, 0, "Bad Command!\r\n", 0, 0);
     }
   }
+  return 0;
 }
 
 void cleanFilename(char* filename) {
