@@ -13,19 +13,44 @@ int main()
   char *filename;
   char fileContentBuffer[MAXIMUM_FILE_SIZE];
   while(1) {
+<<<<<<< HEAD
     interrupt(0x21, 0, "SHELL> ", 0, 0);
     interrupt(0x21, 1, buffer, 0, 0);
     if (strncmp(buffer, "type", 4)) {
+=======
+    /* Routine buffer cleanup */
+    buffer[0] = '\0';
+    filename = 0;
+    fileContentBuffer[0] = '\0';
+
+    /* Actual code */
+    interrupt(0x21, 0, "SHELL> ", 0, 0);
+    interrupt(0x21, 1, buffer, 0, 0);
+    if (strncmp(buffer, "type ", 5)) {
+>>>>>>> M4 step 3
       filename = buffer + 5;
       cleanFilename(filename);
       interrupt(0x21, 3, filename, fileContentBuffer, 0);
       interrupt(0x21, 0, fileContentBuffer, 0, 0);
+<<<<<<< HEAD
     } else if (strncmp(buffer, "execute", 7)) {
       filename = buffer + 8;
       cleanFilename(filename);
       interrupt(0x21, 4, filename, 0x2000, 0);
     } else if (strncmp(buffer, "exit", 4)) {
       return 0;
+=======
+    } else if (strncmp(buffer, "execute ", 8)) {
+      filename = buffer + 8;
+      cleanFilename(filename);
+      interrupt(0x21, 4, filename, 0x2000, 0);
+    } else if (strncmp(buffer, "exit ", 5)) {
+      return 0;
+    } else if (strncmp(buffer, "delete ", 7)) {
+      filename = buffer + 7;
+      cleanFilename(filename);
+      interrupt(0x21, 7, filename, 0, 0);
+>>>>>>> M4 step 3
     } else {
       interrupt(0x21, 0, "Bad Command!\r\n", 0, 0);
     }

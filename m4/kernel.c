@@ -10,10 +10,12 @@
 void printString(char *);
 void readString(char *);
 void readSector(char *, int);
+void writeSector(char *, int);
 int mod(int, int);
 int div(int, int);
 void handleInterrupt21(int, int, int, int);
 void readFile(char* fileName, char* buffer);
+void deleteFile(char*);
 void executeProgram(char*, int);
 void terminate();
 
@@ -78,6 +80,13 @@ void readSector(char *buffer, int sector) {
   interrupt(0x13, 2*256+1, buffer, track*256+relativeSector, head*256+0);
 }
 
+void writeSector(char *buffer, int sector) {
+  int relativeSector = mod(sector, 18) + 1;
+  int head = mod(div(sector, 18), 2);
+  int track = div(sector, 36);
+  interrupt(0x13, 3*256+1, buffer, track*256+relativeSector, head*256+0);
+}
+
 int mod(int a, int b) {
   while (a >= b) {
     a = a - b;
@@ -113,6 +122,12 @@ void handleInterrupt21(int ax, int bx, int cx, int dx) {
     case 5:
       terminate();
       break;
+    case 6:
+      writeSector(bx, cx);
+      break;
+    case 7:
+      deleteFile(bx);
+      break;
     default:
       printString("Error: What did you call it with?\r\n\0");
   }
@@ -134,6 +149,37 @@ void readFile(char* fileName, char* buffer) {
           readSector(buffer+k, directory[i+j]);
         }
       }
+      return;
+    }
+  }
+  printString("File not found!\r\n");
+  return;
+}
+
+void deleteFile(char* fileName) {
+  char map[SECTOR_SIZE];
+  char directory[SECTOR_SIZE];
+  char debug[2];
+  unsigned int i, j;
+  debug[1] = '\0';
+
+  readSector(map, 1);
+  readSector(directory, 2);
+  for (i = 0; i < SECTOR_SIZE; i += DIRECTORY_RECORD_SIZE) {
+    if (directory[i] == 0) {
+      continue;
+    } else if (strncmp(fileName, directory + i, 6)) {
+      directory[i] = 0;
+
+      for (j = DIRECTORY_FILENAME_SIZE; j < DIRECTORY_RECORD_SIZE; j++) {
+        if (directory[i+j] == 0) {
+          break;
+        } else {
+          map[directory[i+j]-1] = 0;
+        }
+      }
+      writeSector(map, 1);
+      writeSector(directory, 2);
       return;
     }
   }
