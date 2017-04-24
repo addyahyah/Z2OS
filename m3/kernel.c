@@ -2,16 +2,10 @@
 * team numbr: 1D
 * team member: Zhou Zhou, Jake Patterson, Yuzong Gao, Luwen Zhang
 */
-
 #include <stdlib.h>
 #include <stdio.h>
 #include "./string.h"
-
-#define SECTOR_SIZE 512
-#define DIRECTORY_RECORD_SIZE 32
-#define DIRECTORY_FILENAME_SIZE 6
-#define DIRECTORY_SECTOR_RECORD_SIZE 26
-#define MAXIMUM_FILE_SIZE 13312
+#include "./constants.h"
 
 void printString(char *);
 void readString(char *);
@@ -21,17 +15,15 @@ int div(int, int);
 void handleInterrupt21(int, int, int, int);
 void readFile(char* fileName, char* buffer);
 void executeProgram(char*, int);
+void terminate();
 
 int main()
 {
   int start;
   int i;
 
-  char line[80];
-  char buffer[MAXIMUM_FILE_SIZE];
   makeInterrupt21();
-  interrupt(0x21, 4, "tstprg\0", 0x2000, 0);
-  while(1){}
+  interrupt(0x21, 4, "shell\0", 0x2000, 0);
   return 0;
 }
 
@@ -118,6 +110,9 @@ void handleInterrupt21(int ax, int bx, int cx, int dx) {
     case 4:
       executeProgram(bx, cx);
       break;
+    case 5:
+      terminate();
+      break;
     default:
       printString("Error: What did you call it with?\r\n\0");
   }
@@ -161,4 +156,8 @@ void executeProgram(char* name, int segment) {
     putInMemory(segment, i, buffer[i]);
   }
   launchProgram(segment);
+}
+
+void terminate() {
+  interrupt(0x21, 4, "shell\0", 0x2000, 0);
 }
