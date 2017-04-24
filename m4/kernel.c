@@ -16,6 +16,7 @@ int div(int, int);
 void handleInterrupt21(int, int, int, int);
 void readFile(char* fileName, char* buffer);
 void deleteFile(char*);
+void writeFile(char*, char*, int);
 void executeProgram(char*, int);
 void terminate();
 
@@ -128,6 +129,9 @@ void handleInterrupt21(int ax, int bx, int cx, int dx) {
     case 7:
       deleteFile(bx);
       break;
+    case 8:
+      writeFile(bx, cx, dx);
+      break;
     default:
       printString("Error: What did you call it with?\r\n\0");
   }
@@ -159,9 +163,7 @@ void readFile(char* fileName, char* buffer) {
 void deleteFile(char* fileName) {
   char map[SECTOR_SIZE];
   char directory[SECTOR_SIZE];
-  char debug[2];
   unsigned int i, j;
-  debug[1] = '\0';
 
   readSector(map, 1);
   readSector(directory, 2);
@@ -184,6 +186,44 @@ void deleteFile(char* fileName) {
     }
   }
   printString("File not found!\r\n");
+  return;
+}
+
+void writeFile(char* name, char* buffer, int numberOfSectors) {
+  char map[SECTOR_SIZE];
+  char directory[SECTOR_SIZE];
+  char freeDirectory = 0;
+  unsigned int i, j, k, freeDirectoryIndex, l;
+  char fullName[DIRECTORY_FILENAME_SIZE];
+  bzero(fullName, DIRECTORY_FILENAME_SIZE);
+
+  readSector(map, 1);
+  readSector(directory, 2);
+  for (i = 0; i < SECTOR_SIZE; i += DIRECTORY_RECORD_SIZE) {
+    if (directory[i] == 0) {
+      freeDirectoryIndex = i;
+      freeDirectory = directory[i];
+      for (j = 0; j < SECTOR_SIZE - numberOfSectors; j++) {
+        if (map[j] == 0) {
+          for (k = 0; k < numberOfSectors; k++) {
+            directory[DIRECTORY_FILENAME_SIZE+1+k] = j+k;
+            map[j+k] = 0xFF;
+            writeSector(buffer + k*SECTOR_SIZE, j+k);
+          }
+          for (k = DIRECTORY_FILENAME_SIZE+1+k; k < DIRECTORY_RECORD_SIZE; k++) {
+            directory[k] = 0;
+          }
+          strncpy(fullName, name, DIRECTORY_FILENAME_SIZE);
+          strncpy(directory + i, fullName, DIRECTORY_FILENAME_SIZE);
+          writeSector(map, 1);
+          writeSector(directory, 2);
+          return;
+        }
+      }
+      printString("Not enough free sectors!\r\n\0");
+    }
+  }
+  printString("No more free directory entries!\r\n\0");
   return;
 }
 

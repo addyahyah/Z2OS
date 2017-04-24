@@ -51,3 +51,37 @@ char *strncat(char *dest, char *src, int n) {
   dest[destStartIndex + i] = '\0';
   return dest;
 }
+
+char *strcpy(char * dest, char *src) {
+  int countSrc = strlen(src);
+  return strncpy(dest, src, countSrc);
+}
+
+char *strncpy(char * dest, char *src, int n) {
+  unsigned int i;
+  for (i = 0; i < n; i++) {
+    dest[i] = src[i];
+    if (src[i] == '\0') {
+      return dest;
+    }
+  }
+  dest[i] = '\0';
+  return dest;
+}
+
+void bzero(char *buffer, unsigned int size) {
+  unsigned int i;
+  for (i = 0; i < size; i++) {
+    buffer[i] = 0;
+  }
+}
+
+int indexOf(char *str, char toFind) {
+  int i;
+  for (i = 0; i < strlen(str); i++) {
+    if (str[i] == toFind) {
+      return i;
+    }
+  }
+  return -1;
+}
