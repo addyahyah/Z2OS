@@ -1,3 +1,8 @@
+/*
+* team numbr: 1D
+* team member: Zhou Zhou, Jake Patterson, Yuzong Gao, Luwen Zhang
+*/
+
 #include <stdlib.h>
 #include <stdio.h>
 #include "./string.h"
