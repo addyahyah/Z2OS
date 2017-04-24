@@ -13,6 +13,12 @@ int main()
   char *filename;
   char fileContentBuffer[MAXIMUM_FILE_SIZE];
   while(1) {
+    /* Routine buffer cleanup */
+    buffer[0] = '\0';
+    filename = 0;
+    fileContentBuffer[0] = '\0';
+
+    /* Actual code */
     interrupt(0x21, 0, "SHELL> ", 0, 0);
     interrupt(0x21, 1, buffer, 0, 0);
     if (strncmp(buffer, "type ", 5)) {
