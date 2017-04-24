@@ -15,16 +15,16 @@ int main()
   while(1) {
     interrupt(0x21, 0, "SHELL> ", 0, 0);
     interrupt(0x21, 1, buffer, 0, 0);
-    if (strncmp(buffer, "type", 4)) {
+    if (strncmp(buffer, "type ", 5)) {
       filename = buffer + 5;
       cleanFilename(filename);
       interrupt(0x21, 3, filename, fileContentBuffer, 0);
       interrupt(0x21, 0, fileContentBuffer, 0, 0);
-    } else if (strncmp(buffer, "execute", 7)) {
+    } else if (strncmp(buffer, "execute ", 8)) {
       filename = buffer + 8;
       cleanFilename(filename);
       interrupt(0x21, 4, filename, 0x2000, 0);
-    } else if (strncmp(buffer, "exit", 4)) {
+    } else if (strncmp(buffer, "exit ", 5)) {
       return 0;
     } else {
       interrupt(0x21, 0, "Bad Command!\r\n", 0, 0);
