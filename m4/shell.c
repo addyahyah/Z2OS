@@ -117,7 +117,7 @@ int main()
       cleanFilename(filename1);
       cleanFilename(filename2);
       interrupt(0x21, 3, filename1, fileContentBuffer, 0);
-      interrupt(0x21, 8, filename2, fileContentBuffer, 1);
+      interrupt(0x21, 8, filename2, fileContentBuffer, strlen(fileContentBuffer) / SECTOR_SIZE + 1);
     } else if (strncmp(buffer, "dir\r", 4)) {
     } else if (strncmp(buffer, "create ", 7)) {
     } else {

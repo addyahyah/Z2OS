@@ -279,6 +279,7 @@ void writeFile(char* name, char* buffer, int numberOfSectors) {
   unsigned int i, j, k, l;
   char fullName[DIRECTORY_FILENAME_SIZE];
   char errorMsg[34];
+  char temp;
 
   bzero(fullName, DIRECTORY_FILENAME_SIZE);
 
@@ -296,8 +297,11 @@ void writeFile(char* name, char* buffer, int numberOfSectors) {
           for (k = DIRECTORY_FILENAME_SIZE+1+k; k < DIRECTORY_RECORD_SIZE; k++) {
             directory[k] = 0;
           }
+          /* The bit following the last byte of filename needs backed up because strncpy writes \0 to the next index */
+          temp = directory[i + DIRECTORY_FILENAME_SIZE];
           strncpy(fullName, name, strlen(name));
           strncpy(directory + i, fullName, DIRECTORY_FILENAME_SIZE);
+          directory[i + DIRECTORY_FILENAME_SIZE] = temp;
           writeSector(map, 1);
           writeSector(directory, 2);
           return;
