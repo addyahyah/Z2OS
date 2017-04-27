@@ -20,13 +20,20 @@ void writeFile(char*, char*, int);
 void executeProgram(char*, int);
 void terminate();
 
-int main()
-{
+int main() {
+  char shell[6];
+
   int start;
   int i;
 
   makeInterrupt21();
-  interrupt(0x21, 4, "shell\0", 0x2000, 0);
+  shell[0] = 's';
+  shell[1] = 'h';
+  shell[2] = 'e';
+  shell[3] = 'l';
+  shell[4] = 'l';
+  shell[5] = '\0';
+  interrupt(0x21, 4, shell, 0x2000, 0);
   return 0;
 }
 
@@ -104,6 +111,7 @@ int div(int a, int b) {
 }
 
 void handleInterrupt21(int ax, int bx, int cx, int dx) {
+  char errorMsg[36];
   switch (ax) {
     case 0:
       printString(bx);
@@ -132,14 +140,51 @@ void handleInterrupt21(int ax, int bx, int cx, int dx) {
     case 8:
       writeFile(bx, cx, dx);
       break;
-    default:
-      printString("Error: What did you call it with?\r\n\0");
+    
+      errorMsg[0] = 'E';
+      errorMsg[1] = 'r';
+      errorMsg[2] = 'r';
+      errorMsg[3] = 'o';
+      errorMsg[4] = 'r';
+      errorMsg[5] = ':';
+      errorMsg[6] = ' ';
+      errorMsg[7] = 'w';
+      errorMsg[8] = 'h';
+      errorMsg[9] = 'a';
+      errorMsg[10] = 't';
+      errorMsg[11] = ' ';
+      errorMsg[12] = 'd';
+      errorMsg[13] = 'i';
+      errorMsg[14] = 'd';
+      errorMsg[15] = ' ';
+      errorMsg[16] = 'y';
+      errorMsg[17] = 'o';
+      errorMsg[18] = 'u';
+      errorMsg[19] = ' ';
+      errorMsg[20] = 'c';
+      errorMsg[21] = 'a';
+      errorMsg[22] = 'l';
+      errorMsg[23] = 'l';
+      errorMsg[24] = ' ';
+      errorMsg[25] = 'i';
+      errorMsg[26] = 't';
+      errorMsg[27] = ' ';
+      errorMsg[28] = 'w';
+      errorMsg[29] = 'i';
+      errorMsg[30] = 't';
+      errorMsg[31] = 'h';
+      errorMsg[32] = '?';
+      errorMsg[33] = '\r';
+      errorMsg[34] = '\n';
+      errorMsg[35] = '\0';
+      printString(errorMsg);
   }
 }
 
 void readFile(char* fileName, char* buffer) {
   char directory[SECTOR_SIZE];
   unsigned int i, j, k;
+  char notFound[17];
 
   readSector(directory, 2);
   for (i = 0; i < SECTOR_SIZE; i += DIRECTORY_RECORD_SIZE) {
@@ -156,13 +201,33 @@ void readFile(char* fileName, char* buffer) {
       return;
     }
   }
-  printString("File not found!\r\n");
+  
+  notFound[0] = 'F';
+  notFound[1] = 'i';
+  notFound[2] = 'l';
+  notFound[3] = 'e';
+  notFound[4] = ' ';
+  notFound[5] = 'n';
+  notFound[6] = 'o';
+  notFound[7] = 't';
+  notFound[8] = ' ';
+  notFound[9] = 'F';
+  notFound[10] = 'o';
+  notFound[11] = 'u';
+  notFound[12] = 'n';
+  notFound[13] = 'd';
+  notFound[14] = '\r';
+  notFound[15] = '\n';
+  notFound[16] = '\0';
+
+  printString(notFound);
   return;
 }
 
 void deleteFile(char* fileName) {
   char map[SECTOR_SIZE];
   char directory[SECTOR_SIZE];
+  char notFound[17];
   unsigned int i, j;
 
   readSector(map, 1);
@@ -185,7 +250,26 @@ void deleteFile(char* fileName) {
       return;
     }
   }
-  printString("File not found!\r\n");
+  
+  notFound[0] = 'F';
+  notFound[1] = 'i';
+  notFound[2] = 'l';
+  notFound[3] = 'e';
+  notFound[4] = ' ';
+  notFound[5] = 'n';
+  notFound[6] = 'o';
+  notFound[7] = 't';
+  notFound[8] = ' ';
+  notFound[9] = 'F';
+  notFound[10] = 'o';
+  notFound[11] = 'u';
+  notFound[12] = 'n';
+  notFound[13] = 'd';
+  notFound[14] = '\r';
+  notFound[15] = '\n';
+  notFound[16] = '\0';
+
+  printString(notFound);
   return;
 }
 
@@ -195,6 +279,9 @@ void writeFile(char* name, char* buffer, int numberOfSectors) {
   char freeDirectory = 0;
   unsigned int i, j, k, freeDirectoryIndex, l;
   char fullName[DIRECTORY_FILENAME_SIZE];
+  char errorMsg[34];
+  
+
   bzero(fullName, DIRECTORY_FILENAME_SIZE);
 
   readSector(map, 1);
@@ -220,21 +307,134 @@ void writeFile(char* name, char* buffer, int numberOfSectors) {
           return;
         }
       }
-      printString("Not enough free sectors!\r\n\0");
+      errorMsg[0] = 'N';
+      errorMsg[1] = 'o';
+      errorMsg[2] = 't';
+      errorMsg[3] = ' ';
+      errorMsg[4] = 'e';
+      errorMsg[5] = 'n';
+      errorMsg[6] = 'o';
+      errorMsg[7] = 'u';
+      errorMsg[8] = 'g';
+      errorMsg[9] = 'h';
+      errorMsg[10] = ' ';
+      errorMsg[11] = 'f';
+      errorMsg[12] = 'r';
+      errorMsg[13] = 'e';
+      errorMsg[14] = 'e';
+      errorMsg[15] = ' ';
+      errorMsg[16] = 's';
+      errorMsg[17] = 'e';
+      errorMsg[18] = 'c';
+      errorMsg[19] = 't';
+      errorMsg[20] = 'o';
+      errorMsg[21] = 'r';
+      errorMsg[22] = 's';
+      errorMsg[23] = '!';
+      errorMsg[24] = '\r';
+      errorMsg[25] = '\n';
+      errorMsg[26] = '\0';
+      printString(errorMsg);
     }
   }
-  printString("No more free directory entries!\r\n\0");
+  errorMsg[0] = 'N';
+  errorMsg[1] = 'o';
+  errorMsg[2] = ' ';
+  errorMsg[3] = 'm';
+  errorMsg[4] = 'o';
+  errorMsg[5] = 'r';
+  errorMsg[6] = 'e';
+  errorMsg[7] = ' ';
+  errorMsg[8] = 'f';
+  errorMsg[9] = 'r';
+  errorMsg[10] = 'e';
+  errorMsg[11] = 'e';
+  errorMsg[12] = ' ';
+  errorMsg[13] = 'd';
+  errorMsg[14] = 'i';
+  errorMsg[15] = 'r';
+  errorMsg[16] = 'e';
+  errorMsg[17] = 'c';
+  errorMsg[18] = 't';
+  errorMsg[19] = 'o';
+  errorMsg[20] = 'r';
+  errorMsg[21] = 'y';
+  errorMsg[22] = ' ';
+  errorMsg[23] = 'e';
+  errorMsg[24] = 'n';
+  errorMsg[25] = 't';
+  errorMsg[26] = 'r';
+  errorMsg[27] = 'i';
+  errorMsg[28] = 'e';
+  errorMsg[29] = 's';
+  errorMsg[30] = '!';
+  errorMsg[31] = '\r';
+  errorMsg[32] = '\n';
+  errorMsg[33] = '\0';
+  printString(errorMsg);
   return;
 }
 
 void executeProgram(char* name, int segment) {
   char buffer[MAXIMUM_FILE_SIZE];
+  char errorMsg[35];
   unsigned int i;
   if (mod(segment, 0x1000) != 0) {
-    printString("Segment not a multiple of 0x1000\r\n");
+    errorMsg[0] = 'S';
+    errorMsg[1] = 'e';
+    errorMsg[2] = 'g';
+    errorMsg[3] = 'm';
+    errorMsg[4] = 'e';
+    errorMsg[5] = 'n';
+    errorMsg[6] = 't';
+    errorMsg[7] = ' ';
+    errorMsg[8] = 'n';
+    errorMsg[9] = 'o';
+    errorMsg[10] = 't';
+    errorMsg[11] = ' ';
+    errorMsg[12] = 'a';
+    errorMsg[13] = ' ';
+    errorMsg[14] = 'm';
+    errorMsg[15] = 'u';
+    errorMsg[16] = 'l';
+    errorMsg[17] = 't';
+    errorMsg[18] = 'i';
+    errorMsg[19] = 'p';
+    errorMsg[20] = 'l';
+    errorMsg[21] = 'e';
+    errorMsg[22] = ' ';
+    errorMsg[23] = 'o';
+    errorMsg[24] = 'f';
+    errorMsg[25] = ' ';
+    errorMsg[26] = '0';
+    errorMsg[27] = 'x';
+    errorMsg[28] = '1';
+    errorMsg[29] = '0';
+    errorMsg[30] = '0';
+    errorMsg[31] = '0';
+    errorMsg[32] = '\r';
+    errorMsg[33] = '\n';
+    errorMsg[34] = '\0';
+    printString(errorMsg);
     return;
   } else if (segment == 0 || segment == 0x1000 || segment > 0xA000) {
-    printString("Illegal segment\r\n");
+    errorMsg[0] = 'I';
+    errorMsg[1] = 'l';
+    errorMsg[2] = 'l';
+    errorMsg[3] = 'e';
+    errorMsg[4] = 'g';
+    errorMsg[5] = 'a';
+    errorMsg[6] = 'l';
+    errorMsg[7] = ' ';
+    errorMsg[8] = 's';
+    errorMsg[9] = 'e';
+    errorMsg[10] = 'g';
+    errorMsg[11] = 'm';
+    errorMsg[12] = 'e';
+    errorMsg[13] = 'n';
+    errorMsg[14] = 't';
+    errorMsg[15] = '\0';
+    printString(errorMsg);
     return;
   }
   readFile(name, buffer);
@@ -245,5 +445,12 @@ void executeProgram(char* name, int segment) {
 }
 
 void terminate() {
-  interrupt(0x21, 4, "shell\0", 0x2000, 0);
+  char shell[6];
+  shell[0] = 's';
+  shell[1] = 'h';
+  shell[2] = 'e';
+  shell[3] = 'l';
+  shell[4] = 'l';
+  shell[5] = '\0';
+  interrupt(0x21, 4, shell, 0x2000, 0);
 }
