@@ -13,7 +13,8 @@ int main()
   char *filename1, *filename2, *filename3, *filename4;
   char fileContentBuffer[MAXIMUM_FILE_SIZE];
   char prompt[8], type[6], execute[9], exit[6], delete[8],
-       copy[6], dir[5], create[8], errorMsg[15];
+       copy[6], dir[5], create[8], errorMsg[15], newline[3];
+  unsigned int i;
   prompt[0] = 'S';
   prompt[1] = 'H';
   prompt[2] = 'E';
@@ -62,14 +63,14 @@ int main()
   dir[2] = 'r';
   dir[3] = ' ';
   dir[4] = '\0';
-  delete[0] = 'd';
-  delete[1] = 'e';
-  delete[2] = 'l';
-  delete[3] = 'e';
-  delete[4] = 't';
-  delete[5] = 'e';
-  delete[6] = ' ';
-  delete[7] = '\0';
+  create[0] = 'c';
+  create[1] = 'r';
+  create[2] = 'e';
+  create[3] = 'a';
+  create[4] = 't';
+  create[5] = 'e';
+  create[6] = ' ';
+  create[7] = '\0';
   errorMsg[0] = 'B';
   errorMsg[1] = 'a';
   errorMsg[2] = 'd';
@@ -85,6 +86,9 @@ int main()
   errorMsg[12] = '\r';
   errorMsg[13] = '\n';
   errorMsg[14] = '\0';
+  newline[0] = '\r';
+  newline[1] = '\n';
+  newline[2] = '\0';
 
   while(1) {
     /* Routine buffer cleanup */
@@ -118,8 +122,21 @@ int main()
       cleanFilename(filename2);
       interrupt(0x21, 3, filename1, fileContentBuffer, 0);
       interrupt(0x21, 8, filename2, fileContentBuffer, strlen(fileContentBuffer) / SECTOR_SIZE + 1);
-    } else if (strncmp(buffer, "dir\r", 4)) {
-    } else if (strncmp(buffer, "create ", 7)) {
+    } else if (strncmp(buffer, dir, 4)) {
+    } else if (strncmp(buffer, create, 7)) {
+      filename1 = buffer + 7;
+      cleanFilename(filename1);
+      i = 0;
+      while (1) {
+        interrupt(0x21, 1, fileContentBuffer + i, 0, 0);
+        if (strncmp(fileContentBuffer + i, newline, 3)) {
+          fileContentBuffer[i] = '\0';
+          break;
+        } else {
+          i += strlen(fileContentBuffer + i);
+        }
+      }
+      interrupt(0x21, 8, filename1, fileContentBuffer, strlen(fileContentBuffer) / SECTOR_SIZE + 1);
     } else {
       interrupt(0x21, 0, errorMsg, 0, 0);
     }
