@@ -13,7 +13,7 @@ int main()
   char *filename1, *filename2, *filename3, *filename4;
   char fileContentBuffer[MAXIMUM_FILE_SIZE];
   char prompt[8], type[6], execute[9], exit[6], delete[8],
-       copy[6], dir[5], create[8], errorMsg[15], newline[3];
+       copy[6], dir[4], create[8], errorMsg[15], newline[3];
   unsigned int i;
   prompt[0] = 'S';
   prompt[1] = 'H';
@@ -61,8 +61,7 @@ int main()
   dir[0] = 'd';
   dir[1] = 'i';
   dir[2] = 'r';
-  dir[3] = ' ';
-  dir[4] = '\0';
+  dir[3] = '\r';
   create[0] = 'c';
   create[1] = 'r';
   create[2] = 'e';
@@ -123,6 +122,7 @@ int main()
       interrupt(0x21, 3, filename1, fileContentBuffer, 0);
       interrupt(0x21, 8, filename2, fileContentBuffer, strlen(fileContentBuffer) / SECTOR_SIZE + 1);
     } else if (strncmp(buffer, dir, 4)) {
+      interrupt(0x21, 9, 0, 0, 0);
     } else if (strncmp(buffer, create, 7)) {
       filename1 = buffer + 7;
       cleanFilename(filename1);

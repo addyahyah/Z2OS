@@ -14,11 +14,12 @@ void writeSector(char *, int);
 int mod(int, int);
 int div(int, int);
 void handleInterrupt21(int, int, int, int);
-void readFile(char* fileName, char* buffer);
+void readFile(char*, char*);
 void deleteFile(char*);
 void writeFile(char*, char*, int);
 void executeProgram(char*, int);
 void terminate();
+void listFile();
 
 int main() {
   char shell[6];
@@ -35,6 +36,54 @@ int main() {
   shell[5] = '\0';
   interrupt(0x21, 4, shell, 0x2000, 0);
   return 0;
+}
+
+void listFile() {
+  char directory[SECTOR_SIZE];
+  char msg[3];
+  unsigned int count, currNum, index;
+  unsigned int i, j, k;
+  char nameStr[12];
+
+  readSector(directory, 2);
+  for (i = 0; i < SECTOR_SIZE; i += DIRECTORY_RECORD_SIZE) {
+    count = 0;
+    if (directory[i] == 0) {
+      continue;
+    } else {
+      for(k = 0; k<DIRECTORY_FILENAME_SIZE; k++){
+        if(directory[i+k] == 0){
+          nameStr[k] = ' ';
+        } else{
+          nameStr[k] = directory[i+k];
+        }
+      }
+      for (j = DIRECTORY_FILENAME_SIZE; j < DIRECTORY_RECORD_SIZE; j++) {
+        if (directory[i+j] == 0) {
+          break;
+        } else {
+          count++;
+        }
+      }
+
+      nameStr[6] = ' ';
+      nameStr[7] = ' ';
+      nameStr[8] = ' ';
+      index = 0;
+      do {
+        currNum = mod(count, 10);
+        nameStr[8-index] = 0x30+currNum;
+        index++;
+        count = div(count, 10);
+      } while(count);
+      nameStr[9] = '\r';
+      nameStr[10] = '\n';
+      nameStr[11] = '\0';
+
+      printString(nameStr);
+      
+    }
+  }
 }
 
 void printString(char *str) {
@@ -140,7 +189,10 @@ void handleInterrupt21(int ax, int bx, int cx, int dx) {
     case 8:
       writeFile(bx, cx, dx);
       break;
-    
+    case 9:
+      listFile();
+      break;
+    default:
       errorMsg[0] = 'E';
       errorMsg[1] = 'r';
       errorMsg[2] = 'r';
