@@ -289,7 +289,7 @@ void writeFile(char* name, char* buffer, int numberOfSectors) {
       for (j = 0; j < SECTOR_SIZE - numberOfSectors; j++) {
         if (map[j] == 0) {
           for (k = 0; k < numberOfSectors; k++) {
-            directory[DIRECTORY_FILENAME_SIZE+1+k] = j+k;
+            directory[i+DIRECTORY_FILENAME_SIZE+k] = j+k;
             map[j+k] = 0xFF;
             writeSector(buffer + k*SECTOR_SIZE, j+k);
           }
@@ -297,7 +297,6 @@ void writeFile(char* name, char* buffer, int numberOfSectors) {
             directory[k] = 0;
           }
           strncpy(fullName, name, strlen(name));
-          printString(fullName);
           strncpy(directory + i, fullName, DIRECTORY_FILENAME_SIZE);
           writeSector(map, 1);
           writeSector(directory, 2);
