@@ -13,7 +13,7 @@ int main()
   char *filename1, *filename2, *filename3, *filename4;
   char fileContentBuffer[MAXIMUM_FILE_SIZE];
   char prompt[8], type[6], execute[9], exit[6], delete[8],
-       copy[6], space[2], dir[5], create[8], errorMsg[15];
+       copy[6], dir[5], create[8], errorMsg[15];
   prompt[0] = 'S';
   prompt[1] = 'H';
   prompt[2] = 'E';
@@ -57,8 +57,6 @@ int main()
   copy[3] = 'y';
   copy[4] = ' ';
   copy[5] = '\0';
-  space[0] = ' ';
-  space[1] = '\0';
   dir[0] = 'd';
   dir[1] = 'i';
   dir[2] = 'r';
@@ -114,10 +112,10 @@ int main()
       interrupt(0x21, 7, filename1, 0, 0);
     } else if (strncmp(buffer, copy, 5)) {
       filename1 = buffer + 5;
-      filename1[indexOf(filename1, space)] = '\0';
-      interrupt(0x21, 0, filename1, 0, 0);
-      filename2 = indexOf(buffer + 5, space) + 1;
-      interrupt(0x21, 0, filename2, 0, 0);
+      filename2 = filename1 + indexOf(filename1, ' ') + 1;
+      filename1[indexOf(filename1, ' ')] = '\0';
+      cleanFilename(filename1);
+      cleanFilename(filename2);
       interrupt(0x21, 3, filename1, fileContentBuffer, 0);
       interrupt(0x21, 8, filename2, fileContentBuffer, 0);
     } else if (strncmp(buffer, "dir\r", 4)) {
@@ -132,7 +130,7 @@ int main()
 void cleanFilename(char* filename) {
   unsigned int i;
   for (i = 0;;i++) {
-    if (filename[i] == '\r') {
+    if (filename[i] == '\r' || filename[i] == ' ') {
       filename[i] = '\0';
       return;
     } else if (filename[i] == '\0') {

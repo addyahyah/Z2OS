@@ -276,11 +276,9 @@ void deleteFile(char* fileName) {
 void writeFile(char* name, char* buffer, int numberOfSectors) {
   char map[SECTOR_SIZE];
   char directory[SECTOR_SIZE];
-  char freeDirectory = 0;
-  unsigned int i, j, k, freeDirectoryIndex, l;
+  unsigned int i, j, k, l;
   char fullName[DIRECTORY_FILENAME_SIZE];
   char errorMsg[34];
-  
 
   bzero(fullName, DIRECTORY_FILENAME_SIZE);
 
@@ -288,8 +286,6 @@ void writeFile(char* name, char* buffer, int numberOfSectors) {
   readSector(directory, 2);
   for (i = 0; i < SECTOR_SIZE; i += DIRECTORY_RECORD_SIZE) {
     if (directory[i] == 0) {
-      freeDirectoryIndex = i;
-      freeDirectory = directory[i];
       for (j = 0; j < SECTOR_SIZE - numberOfSectors; j++) {
         if (map[j] == 0) {
           for (k = 0; k < numberOfSectors; k++) {
@@ -300,7 +296,8 @@ void writeFile(char* name, char* buffer, int numberOfSectors) {
           for (k = DIRECTORY_FILENAME_SIZE+1+k; k < DIRECTORY_RECORD_SIZE; k++) {
             directory[k] = 0;
           }
-          strncpy(fullName, name, DIRECTORY_FILENAME_SIZE);
+          strncpy(fullName, name, strlen(name));
+          printString(fullName);
           strncpy(directory + i, fullName, DIRECTORY_FILENAME_SIZE);
           writeSector(map, 1);
           writeSector(directory, 2);
