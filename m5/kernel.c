@@ -18,15 +18,25 @@ void handleTimerInterrupt(int, int);
 void readFile(char*, char*);
 void deleteFile(char*);
 void writeFile(char*, char*, int);
-void executeProgram(char*, int);
+void executeProgram(char*);
 void terminate();
 void listFile();
+
+int currentProcess;
+ProcessTableEntry processes[PROCESS_TABLE_SIZE];
 
 int main() {
   char shell[6];
 
   int start;
   int i;
+
+  for (i=0;i<PROCESS_TABLE_SIZE;i++){
+    processes[i].isActive=0;
+    processes[i].sp = 0xff00;
+  }
+
+
   makeTimerInterrupt();
 
   makeInterrupt21();
@@ -36,7 +46,7 @@ int main() {
   shell[3] = 'l';
   shell[4] = 'l';
   shell[5] = '\0';
-  interrupt(0x21, 4, shell, 0x2000, 0);
+  interrupt(0x21, 4, shell, 0, 0);
   return 0;
 }
 
@@ -181,7 +191,7 @@ void handleInterrupt21(int ax, int bx, int cx, int dx) {
       readFile(bx, cx);
       break;
     case 4:
-      executeProgram(bx, cx);
+      executeProgram(bx);
       break;
     case 5:
       terminate();
@@ -433,10 +443,20 @@ void writeFile(char* name, char* buffer, int numberOfSectors) {
   return;
 }
 
-void executeProgram(char* name, int segment) {
+void executeProgram(char* name) {
   char buffer[MAXIMUM_FILE_SIZE];
   char errorMsg[35];
   unsigned int i;
+  int segment;
+
+  for(i=0;i<PROCESS_TABLE_SIZE;i++){
+    if(processes[i].isActive==0) {
+      processes[i].isActive=1;
+      segment = (i+2) * 0x1000;
+      break;
+    }
+  }
+
   if (mod(segment, 0x1000) != 0) {
     errorMsg[0] = 'S';
     errorMsg[1] = 'e';
@@ -499,6 +519,7 @@ void executeProgram(char* name, int segment) {
   for (i = 0; i < MAXIMUM_FILE_SIZE; i++) {
     putInMemory(segment, i, buffer[i]);
   }
+
   launchProgram(segment);
 }
 
@@ -514,12 +535,11 @@ void terminate() {
 }
 
 void handleTimerInterrupt(int segment, int sp) {
-  char stringToPrint[4];
+  /*char stringToPrint[4];
   stringToPrint[0]='T';
   stringToPrint[1]='i';
   stringToPrint[2]='c';
   stringToPrint[3]='\0';
-
-  printString(stringToPrint);
+  printString(stringToPrint);*/
   returnFromTimer(segment, sp);
 }
