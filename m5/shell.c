@@ -88,7 +88,7 @@ int main()
   newline[0] = '\r';
   newline[1] = '\n';
   newline[2] = '\0';
-
+  enableInterrupts();
   while(1) {
     /* Routine buffer cleanup */
     buffer[0] = '\0';

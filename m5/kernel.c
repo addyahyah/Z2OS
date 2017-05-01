@@ -36,7 +36,6 @@ int main() {
     processes[i].sp = 0xff00;
   }
 
-
   makeTimerInterrupt();
 
   makeInterrupt21();
@@ -443,104 +442,60 @@ void writeFile(char* name, char* buffer, int numberOfSectors) {
 
 void executeProgram(char* name) {
   char buffer[MAXIMUM_FILE_SIZE];
-  char errorMsg[35];
-  unsigned int i;
+  unsigned int i, j;
   int segment;
   int result;
 
-  for(i=0;i<PROCESS_TABLE_SIZE;i++){
-    if(processes[i].isActive==0) {
-      processes[i].isActive=1;
+  for (i = 0; i < PROCESS_TABLE_SIZE; i++) {
+    if (processes[i].isActive == 0) {
       segment = (i+2) * 0x1000;
+      result = readFile(name, buffer);
+  
+      if (result == 0) {
+        for (j = 0; j < MAXIMUM_FILE_SIZE; j++) {
+          putInMemory(segment, j, buffer[j]);
+        }
+        setKernelDataSegment();
+        initializeProgram(segment);
+      }
+
+      buffer[0] = 0x35;
+      buffer[1] = '\0';
+      printString(buffer);
+      processes[i].isActive=1;
       break;
     }
   }
-
-  if (mod(segment, 0x1000) != 0) {
-    errorMsg[0] = 'S';
-    errorMsg[1] = 'e';
-    errorMsg[2] = 'g';
-    errorMsg[3] = 'm';
-    errorMsg[4] = 'e';
-    errorMsg[5] = 'n';
-    errorMsg[6] = 't';
-    errorMsg[7] = ' ';
-    errorMsg[8] = 'n';
-    errorMsg[9] = 'o';
-    errorMsg[10] = 't';
-    errorMsg[11] = ' ';
-    errorMsg[12] = 'a';
-    errorMsg[13] = ' ';
-    errorMsg[14] = 'm';
-    errorMsg[15] = 'u';
-    errorMsg[16] = 'l';
-    errorMsg[17] = 't';
-    errorMsg[18] = 'i';
-    errorMsg[19] = 'p';
-    errorMsg[20] = 'l';
-    errorMsg[21] = 'e';
-    errorMsg[22] = ' ';
-    errorMsg[23] = 'o';
-    errorMsg[24] = 'f';
-    errorMsg[25] = ' ';
-    errorMsg[26] = '0';
-    errorMsg[27] = 'x';
-    errorMsg[28] = '1';
-    errorMsg[29] = '0';
-    errorMsg[30] = '0';
-    errorMsg[31] = '0';
-    errorMsg[32] = '\r';
-    errorMsg[33] = '\n';
-    errorMsg[34] = '\0';
-    printString(errorMsg);
-    return;
-  } else if (segment == 0 || segment == 0x1000 || segment > 0xA000) {
-    errorMsg[0] = 'I';
-    errorMsg[1] = 'l';
-    errorMsg[2] = 'l';
-    errorMsg[3] = 'e';
-    errorMsg[4] = 'g';
-    errorMsg[5] = 'a';
-    errorMsg[6] = 'l';
-    errorMsg[7] = ' ';
-    errorMsg[8] = 's';
-    errorMsg[9] = 'e';
-    errorMsg[10] = 'g';
-    errorMsg[11] = 'm';
-    errorMsg[12] = 'e';
-    errorMsg[13] = 'n';
-    errorMsg[14] = 't';
-    errorMsg[15] = '\0';
-    printString(errorMsg);
-    return;
-  }
-  result = readFile(name, buffer);
-  
-  if(result == 0){
-    for (i = 0; i < MAXIMUM_FILE_SIZE; i++) {
-      putInMemory(segment, i, buffer[i]);
-    }
-    launchProgram(segment);
-  } 
+  restoreDataSegment();
 }
 
 void terminate() {
-  char shell[6];
-  shell[0] = 's';
-  shell[1] = 'h';
-  shell[2] = 'e';
-  shell[3] = 'l';
-  shell[4] = 'l';
-  shell[5] = '\0';
-  interrupt(0x21, 4, shell, 0x2000, 0);
+  setKernelDataSegment();
+  processes[currentProcess].isActive = 0;
+  while(1);
 }
 
 void handleTimerInterrupt(int segment, int sp) {
-  /*char stringToPrint[4];
-  stringToPrint[0]='T';
-  stringToPrint[1]='i';
-  stringToPrint[2]='c';
-  stringToPrint[3]='\0';
-  printString(stringToPrint);*/
+  char debug[10];
+  int current;
+  debug[1] = '\0';
+  debug[0] = 0x30;
+  printString(debug);
+  current = currentProcess;
+  processes[currentProcess].sp = sp;
+  do {
+    currentProcess++;
+    currentProcess = mod(currentProcess, PROCESS_TABLE_SIZE);
+    if (processes[currentProcess].isActive == 0) {
+      continue;
+    } else {
+      printString("Active\r\n\0");
+      segment = (currentProcess+2) * 0x1000;
+      sp = processes[currentProcess].sp;
+      returnFromTimer(segment, sp);
+      break;
+    }
+  }
+  while (current != currentProcess);
   returnFromTimer(segment, sp);
 }
