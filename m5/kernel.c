@@ -14,6 +14,7 @@ void writeSector(char *, int);
 int mod(int, int);
 int div(int, int);
 void handleInterrupt21(int, int, int, int);
+void handleTimerInterrupt(int, int);
 void readFile(char*, char*);
 void deleteFile(char*);
 void writeFile(char*, char*, int);
@@ -26,6 +27,7 @@ int main() {
 
   int start;
   int i;
+  makeTimerInterrupt();
 
   makeInterrupt21();
   shell[0] = 's';
@@ -505,4 +507,15 @@ void terminate() {
   shell[4] = 'l';
   shell[5] = '\0';
   interrupt(0x21, 4, shell, 0x2000, 0);
+}
+
+void handleTimerInterrupt(int segment, int sp) {
+  char stringToPrint[4];
+  stringToPrint[0]='T';
+  stringToPrint[1]='i';
+  stringToPrint[2]='c';
+  stringToPrint[3]='\0';
+
+  printString(stringToPrint);
+  returnFromTimer(segment, sp);
 }
