@@ -115,8 +115,12 @@ void readString(char *buffer) {
         printString(bufferToPrint);
         return;
       case 0x8:
-        bufferToPrint[0] = currentChar;
         if (i > 0) {
+          bufferToPrint[0] = currentChar;
+          printString(bufferToPrint);
+          bufferToPrint[0] = ' ';
+          printString(bufferToPrint);
+          bufferToPrint[0] = currentChar;
           printString(bufferToPrint);
           i--;
         }
@@ -428,6 +432,7 @@ void writeFile(char* name, char* buffer, int numberOfSectors) {
 void executeProgram(char* name, int segment) {
   char buffer[MAXIMUM_FILE_SIZE];
   char errorMsg[35];
+  int result;
   unsigned int i;
   if (mod(segment, 0x1000) != 0) {
     errorMsg[0] = 'S';
