@@ -15,14 +15,14 @@ int mod(int, int);
 int div(int, int);
 void handleInterrupt21(int, int, int, int);
 void handleTimerInterrupt(int, int);
-void readFile(char*, char*);
+int readFile(char*, char*);
 void deleteFile(char*);
 void writeFile(char*, char*, int);
 void executeProgram(char*);
 void terminate();
 void listFile();
 
-int currentProcess;
+int currentProcess = 0;
 ProcessTableEntry processes[PROCESS_TABLE_SIZE];
 
 int main() {
@@ -249,11 +249,10 @@ void handleInterrupt21(int ax, int bx, int cx, int dx) {
   }
 }
 
-void readFile(char* fileName, char* buffer) {
+int readFile(char* fileName, char* buffer) {
   char directory[SECTOR_SIZE];
   unsigned int i, j, k;
   char notFound[17];
-
   readSector(directory, 2);
   for (i = 0; i < SECTOR_SIZE; i += DIRECTORY_RECORD_SIZE) {
     if (directory[i] == 0) {
@@ -261,15 +260,14 @@ void readFile(char* fileName, char* buffer) {
     } else if (strncmp(fileName, directory + i, 6)) {
       for (j = DIRECTORY_FILENAME_SIZE, k = 0; j < DIRECTORY_RECORD_SIZE; j++, k += SECTOR_SIZE) {
         if (directory[i+j] == 0) {
-          return;
+          return 0;
         } else {
           readSector(buffer+k, directory[i+j]);
         }
       }
-      return;
+      return 0;
     }
   }
-  
   notFound[0] = 'F';
   notFound[1] = 'i';
   notFound[2] = 'l';
@@ -289,7 +287,7 @@ void readFile(char* fileName, char* buffer) {
   notFound[16] = '\0';
 
   printString(notFound);
-  return;
+  return -1;
 }
 
 void deleteFile(char* fileName) {
@@ -448,6 +446,7 @@ void executeProgram(char* name) {
   char errorMsg[35];
   unsigned int i;
   int segment;
+  int result;
 
   for(i=0;i<PROCESS_TABLE_SIZE;i++){
     if(processes[i].isActive==0) {
@@ -515,12 +514,14 @@ void executeProgram(char* name) {
     printString(errorMsg);
     return;
   }
-  readFile(name, buffer);
-  for (i = 0; i < MAXIMUM_FILE_SIZE; i++) {
-    putInMemory(segment, i, buffer[i]);
-  }
-
-  launchProgram(segment);
+  result = readFile(name, buffer);
+  
+  if(result == 0){
+    for (i = 0; i < MAXIMUM_FILE_SIZE; i++) {
+      putInMemory(segment, i, buffer[i]);
+    }
+    launchProgram(segment);
+  } 
 }
 
 void terminate() {
