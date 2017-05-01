@@ -1,0 +1,69 @@
+Team members: Jake Patterson, Yuzong Gao, Luwen Zhang, Zhou Zhou
+
+### in this milestone we added a shell support for the rest of CRUD operations on a file in addition to adding a command dir, which lists all files in a directory, and create which creates a text file. Lastly, a function called writeSector was added to support the file operations.
+
+### Instructions for building your operating system
+$ ./compileOS
+
+### Instructions for testing and using the operating system
+$ ./compileOS
+
+testing writeSector:
+1. modify main to call an interrupt with AX = 6, BX = the address of a character array holding the sector to write, CX = the sector number
+sample code:
+char testStr[5], secondBuf[5];
+testStr[0] = 'h';
+testStr[1] = 'e';
+testStr[2] = 'y';
+testStr[3] = 'o';
+testStr[4] = '\0';
+
+makeInterrupt21();
+interrupt(0x21, 6, testStr, 2, 0); /*this is the write sector */
+interrupt(0x21, 2, secondBuf, 2, 0); /* this is to read the sector just written */
+interrupt(0x21, 1, testStr, 0, 0); /* print out base string */
+interrupt(0x21, 1, secondBuf, 0, 0); /* print out string we read from sector */
+
+2. writeSector must also function for the tests below, so feel free to run those first and if they work then writeSector must also work
+
+testing deleteFile:
+1. In compileOS.sh, add in a line to load in a text file you wish to delete for instance:
+./loadFile myfavesongs.txt
+
+in the shell, execute the following command:
+type myfave
+
+verify the output of your file
+next enter the delete command followed by another type
+delete myfave
+type myfave
+
+verify the output is no longer the same as what was in your file beforehand, expect a 'File Not Found' error instead
+
+testing writeFile:
+1. in the shell, execute the following command:
+type coolfi
+expect 'File Not found' error
+create coolfi
+you are now free to enter input, which can be terminted by pressing enter on an empty line
+once you're done entering input, enter this:
+type coolfi
+you should now see the input you entered to the file.
+
+testing copyFile:
+1. load in the standard message.txt
+in the shell, enter the following command:
+type messag
+copy messag m2
+type m2
+
+testing dir:
+1. in the shell, execute the following command:
+dir
+a list of file names and number of sectors should display for the current directory
+
+### Bugs or deficiencies
+Such things do not exist
+
+### Additional features that we implemented
+Sector sizes in the dir command
