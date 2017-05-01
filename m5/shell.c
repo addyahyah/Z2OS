@@ -106,7 +106,7 @@ int main()
     } else if (strncmp(buffer, execute, 8)) {
       filename1 = buffer + 8;
       cleanFilename(filename1);
-      interrupt(0x21, 4, filename1, 0x2000, 0);
+      interrupt(0x21, 4, filename1, 0, 0);
     } else if (strncmp(buffer, exit, 5)) {
       return 0;
     } else if (strncmp(buffer, delete, 7)) {
