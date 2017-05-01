@@ -117,8 +117,12 @@ void readString(char *buffer) {
         printString(bufferToPrint);
         return;
       case 0x8:
-        bufferToPrint[0] = currentChar;
         if (i > 0) {
+          bufferToPrint[0] = currentChar;
+          printString(bufferToPrint);
+          bufferToPrint[0] = ' ';
+          printString(bufferToPrint);
+          bufferToPrint[0] = currentChar;
           printString(bufferToPrint);
           i--;
         }
