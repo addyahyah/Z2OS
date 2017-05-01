@@ -53,7 +53,10 @@ void listFile() {
     } else {
       for(k = 0; k<DIRECTORY_FILENAME_SIZE; k++){
         if(directory[i+k] == 0){
-          nameStr[k] = ' ';
+          for(j = k; j< DIRECTORY_FILENAME_SIZE; j++){
+            nameStr[j] = ' ';
+          }
+          break;
         } else{
           nameStr[k] = directory[i+k];
         }
