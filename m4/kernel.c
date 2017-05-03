@@ -14,12 +14,13 @@ void writeSector(char *, int);
 int mod(int, int);
 int div(int, int);
 void handleInterrupt21(int, int, int, int);
-int readFile(char*, char*);
+int readFile(char*, char*, int);
 void deleteFile(char*);
 void writeFile(char*, char*, int);
 void executeProgram(char*, int);
 void terminate();
 void listFile();
+void countFileSectors(int, int *);
 
 int main() {
   char shell[6];
@@ -179,7 +180,7 @@ void handleInterrupt21(int ax, int bx, int cx, int dx) {
       readSector(bx, cx);
       break;
     case 3:
-      readFile(bx, cx);
+      readFile(bx, cx, dx);
       break;
     case 4:
       executeProgram(bx, cx);
@@ -198,6 +199,9 @@ void handleInterrupt21(int ax, int bx, int cx, int dx) {
       break;
     case 9:
       listFile();
+      break;
+    case 99:
+      countFileSectors(bx, cx);
       break;
     default:
       errorMsg[0] = 'E';
@@ -240,7 +244,7 @@ void handleInterrupt21(int ax, int bx, int cx, int dx) {
   }
 }
 
-int readFile(char* fileName, char* buffer) {
+int readFile(char* fileName, char* buffer, int notDebug) {
   char directory[SECTOR_SIZE];
   unsigned int i, j, k;
   char notFound[17];
@@ -259,25 +263,28 @@ int readFile(char* fileName, char* buffer) {
       return 0;
     }
   }
-  notFound[0] = 'F';
-  notFound[1] = 'i';
-  notFound[2] = 'l';
-  notFound[3] = 'e';
-  notFound[4] = ' ';
-  notFound[5] = 'n';
-  notFound[6] = 'o';
-  notFound[7] = 't';
-  notFound[8] = ' ';
-  notFound[9] = 'F';
-  notFound[10] = 'o';
-  notFound[11] = 'u';
-  notFound[12] = 'n';
-  notFound[13] = 'd';
-  notFound[14] = '\r';
-  notFound[15] = '\n';
-  notFound[16] = '\0';
 
-  printString(notFound);
+  if (!notDebug) {
+    notFound[0] = 'F';
+    notFound[1] = 'i';
+    notFound[2] = 'l';
+    notFound[3] = 'e';
+    notFound[4] = ' ';
+    notFound[5] = 'n';
+    notFound[6] = 'o';
+    notFound[7] = 't';
+    notFound[8] = ' ';
+    notFound[9] = 'F';
+    notFound[10] = 'o';
+    notFound[11] = 'u';
+    notFound[12] = 'n';
+    notFound[13] = 'd';
+    notFound[14] = '\r';
+    notFound[15] = '\n';
+    notFound[16] = '\0';
+
+    printString(notFound);
+  }
   return -1;
 }
 
@@ -337,6 +344,29 @@ void writeFile(char* name, char* buffer, int numberOfSectors) {
   char fullName[DIRECTORY_FILENAME_SIZE];
   char errorMsg[34];
   char temp;
+  char tempBuffer[MAXIMUM_FILE_SIZE];
+
+  if (readFile(name, tempBuffer, 1) == 0) {
+    errorMsg[0] = 'A';
+    errorMsg[1] = 'l';
+    errorMsg[2] = 'r';
+    errorMsg[3] = 'e';
+    errorMsg[4] = 'a';
+    errorMsg[5] = 'd';
+    errorMsg[6] = 'y';
+    errorMsg[7] = ' ';
+    errorMsg[8] = 'e';
+    errorMsg[9] = 'x';
+    errorMsg[10] = 'i';
+    errorMsg[11] = 's';
+    errorMsg[12] = 't';
+    errorMsg[13] = 's';
+    errorMsg[14] = '\r';
+    errorMsg[15] = '\n';
+    errorMsg[16] = '\0';
+    printString(errorMsg);
+    return;
+  }
 
   bzero(fullName, DIRECTORY_FILENAME_SIZE);
 
@@ -514,4 +544,33 @@ void terminate() {
   shell[4] = 'l';
   shell[5] = '\0';
   interrupt(0x21, 4, shell, 0x2000, 0);
+}
+
+void countFileSectors(int filename, int *countPtr) {
+  char directory[SECTOR_SIZE];
+  unsigned int i, j, k;
+  char tempBuffer[MAXIMUM_FILE_SIZE];
+
+  if (readFile(filename, tempBuffer) < 0) {
+    /* File not found */
+    *countPtr = -1;
+    return;
+  }
+
+  *countPtr = 0;
+  readSector(directory, 2);
+  for (i = 0; i < SECTOR_SIZE; i += DIRECTORY_RECORD_SIZE) {
+    if (directory[i] == 0) {
+      continue;
+    } else if (strncmp(filename, directory + i, 6)) {
+      for (j = DIRECTORY_FILENAME_SIZE, k = 0; j < DIRECTORY_RECORD_SIZE; j++, k += SECTOR_SIZE) {
+        if (directory[i+j] == 0) {
+          return;
+        } else {
+          (*countPtr)++;
+        }
+      }
+    }
+  }
+  return;
 }
