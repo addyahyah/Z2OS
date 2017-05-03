@@ -15,6 +15,7 @@ int main()
   char prompt[8], type[6], execute[9], exit[6], delete[8],
        copy[6], dir[4], create[8], errorMsg[15], newline[3];
   unsigned int i;
+  int numSectors;
   prompt[0] = 'S';
   prompt[1] = 'H';
   prompt[2] = 'E';
@@ -120,7 +121,8 @@ int main()
       cleanFilename(filename1);
       cleanFilename(filename2);
       interrupt(0x21, 3, filename1, fileContentBuffer, 0);
-      interrupt(0x21, 8, filename2, fileContentBuffer, strlen(fileContentBuffer) / SECTOR_SIZE + 1);
+      interrupt(0x21, 99, filename1, &numSectors, 0);
+      interrupt(0x21, 8, filename2, fileContentBuffer, numSectors);
     } else if (strncmp(buffer, dir, 4)) {
       interrupt(0x21, 9, 0, 0, 0);
     } else if (strncmp(buffer, create, 7)) {
