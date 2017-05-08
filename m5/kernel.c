@@ -528,6 +528,11 @@ void executeProgram(char* name) {
   }
   restoreDataSegment();
 
+  if (i >= PROCESS_TABLE_SIZE) {
+    /* No free slots */
+    return;
+  }
+
   segment = (t+2) * 0x1000;
   result = readFile(name, buffer, 0);
   if (result == 0) {
@@ -648,6 +653,11 @@ void blockExecuteProgram(char* name) {
   }
   restoreDataSegment();
 
+  if (i >= PROCESS_TABLE_SIZE) {
+    /* No free slots */
+    return;
+  }
+
   segment = (t+2) * 0x1000;
   result = readFile(name, buffer, 0);
   if (result == 0) {
@@ -656,9 +666,9 @@ void blockExecuteProgram(char* name) {
     }
     initializeProgram(segment);
     setKernelDataSegment();
-    processes[t].isActive = 1;
     processes[parent].waiting = t;
     processes[parent].isActive = 0;
+    processes[t].isActive = 1;
     restoreDataSegment();
   }
 }

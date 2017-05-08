@@ -189,7 +189,7 @@ int main()
       cleanFilename(processToKill);
       interrupt(0x21, 11, (int)(processToKill-'0'), 0, 0);
     } else if (strncmp(buffer, execforeground, 15)) {
-      filename1 = buffer + 16;
+      filename1 = buffer + 15;
       cleanFilename(filename1);
       interrupt(0x21, 14, filename1, 0, 0);
     } else {
