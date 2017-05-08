@@ -122,7 +122,7 @@ romimage: file=$BXSHARE/BIOS-bochs-latest
 #  1.4   650Mhz Athlon K-7 with Linux 2.4.4/egcs-2.91.66  2 to  2.5 Mips
 #  1.4   400Mhz Pentium II with Linux 2.0.36/egcs-1.0.3   1 to  1.8 Mips
 #=======================================================================
-cpu: count=1, ips=100000000, reset_on_triple_fault=1
+cpu: count=1, ips=10000000, reset_on_triple_fault=1
 
 #=======================================================================
 # MEGS
