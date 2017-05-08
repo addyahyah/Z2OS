@@ -26,6 +26,7 @@ void clearScreen();
 void killProcess(int);
 void changeBGcolor();
 void changeFGcolor();
+void blockExecuteProgram(char*);
 
 int currentProcess = 0;
 ProcessTableEntry processes[PROCESS_TABLE_SIZE];
@@ -38,6 +39,7 @@ int main() {
   for (i=0;i<PROCESS_TABLE_SIZE;i++){
     processes[i].isActive=0;
     processes[i].sp = 0xff00;
+    processes[i].waiting = -1;
   }
 
   makeInterrupt21();
@@ -244,6 +246,9 @@ void handleInterrupt21(int ax, int bx, int cx, int dx) {
       break;
     case 13:
       changeBGcolor(bx);
+      break;
+    case 14:
+      blockExecuteProgram(bx);
       break;
     case 99:
       countFileSectors(bx, cx);
@@ -514,16 +519,17 @@ void executeProgram(char* name) {
 
   setKernelDataSegment();
   for (i = 0; i < PROCESS_TABLE_SIZE; i++) {
-    if (processes[i].isActive == 0) {
+    if (processes[i].isActive == 0 && (processes[i].waiting < 0)) {
       t = i;
       processes[i].sp = 0xFF00;
+      processes[i].waiting = -1;
       break;
     }
   }
   restoreDataSegment();
 
   segment = (t+2) * 0x1000;
-  result = readFile(name, buffer);
+  result = readFile(name, buffer, 0);
   if (result == 0) {
     for (j = 0; j < MAXIMUM_FILE_SIZE; j++) {
       putInMemory(segment, j, buffer[j]);
@@ -536,14 +542,29 @@ void executeProgram(char* name) {
 }
 
 void terminate() {
+  unsigned int i;
   setKernelDataSegment();
   processes[currentProcess].isActive = 0;
+  processes[currentProcess].waiting = -1;
+  for (i = 0; i < PROCESS_TABLE_SIZE; i++) {
+    if (processes[i].waiting == currentProcess) {
+      processes[i].waiting = -1;
+      processes[i].isActive = 1;
+    }
+  }
   while(1);
 }
 
 void killProcess(int processToKill){
+  unsigned int i;
   setKernelDataSegment();
   processes[processToKill].isActive = 0;
+  for (i = 0; i < PROCESS_TABLE_SIZE; i++) {
+    if (processes[i].waiting == processToKill) {
+      processes[i].waiting = -1;
+      processes[i].isActive = 1;
+    }
+  }
   restoreDataSegment();
 }
 
@@ -585,7 +606,7 @@ void countFileSectors(int filename, int *countPtr) {
   unsigned int i, j, k;
   char tempBuffer[MAXIMUM_FILE_SIZE];
 
-  if (readFile(filename, tempBuffer) < 0) {
+  if (readFile(filename, tempBuffer, 1) < 0) {
     /* File not found */
     *countPtr = -1;
     return;
@@ -607,4 +628,37 @@ void countFileSectors(int filename, int *countPtr) {
     }
   }
   return;
+}
+
+void blockExecuteProgram(char* name) {
+  char buffer[MAXIMUM_FILE_SIZE];
+  int i, j, t, parent;
+  int segment;
+  int result;
+
+  setKernelDataSegment();
+  parent = currentProcess;
+  for (i = 0; i < PROCESS_TABLE_SIZE; i++) {
+    if (processes[i].isActive == 0 && (processes[i].waiting < 0)) {
+      t = i;
+      processes[t].sp = 0xFF00;
+      processes[t].waiting = -1;
+      break;
+    }
+  }
+  restoreDataSegment();
+
+  segment = (t+2) * 0x1000;
+  result = readFile(name, buffer, 0);
+  if (result == 0) {
+    for (j = 0; j < MAXIMUM_FILE_SIZE; j++) {
+      putInMemory(segment, j, buffer[j]);
+    }
+    initializeProgram(segment);
+    setKernelDataSegment();
+    processes[t].isActive = 1;
+    processes[parent].waiting = t;
+    processes[parent].isActive = 0;
+    restoreDataSegment();
+  }
 }

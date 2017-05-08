@@ -13,7 +13,8 @@ int main()
   char *filename1, *filename2, *filename3, *filename4, *processToKill;
   char fileContentBuffer[MAXIMUM_FILE_SIZE];
   char prompt[8], type[6], execute[9], exit[6], delete[8],
-       copy[6], dir[4], create[8], errorMsg[15], newline[3], clear[4], kill[6], changeBG[6], changeFG[6];
+       copy[6], dir[4], create[8], errorMsg[15], newline[3],
+       clear[4], kill[6], changeBG[6], changeFG[6], execforeground[16];
   unsigned int i;
   int numSectors;
   prompt[0] = 'S';
@@ -111,6 +112,22 @@ int main()
   changeFG[3] = ' ';
   changeFG[4] = ' ';
   changeFG[5] = '\r';
+  execforeground[0] = 'e';
+  execforeground[1] = 'x';
+  execforeground[2] = 'e';
+  execforeground[3] = 'c';
+  execforeground[4] = 'f';
+  execforeground[5] = 'o';
+  execforeground[6] = 'r';
+  execforeground[7] = 'e';
+  execforeground[8] = 'g';
+  execforeground[9] = 'r';
+  execforeground[10] = 'o';
+  execforeground[11] = 'u';
+  execforeground[12] = 'n';
+  execforeground[13] = 'd';
+  execforeground[14] = ' ';
+  execforeground[15] = '\0';
   enableInterrupts();
   while(1) {
     /* Routine buffer cleanup */
@@ -171,6 +188,10 @@ int main()
       processToKill = buffer + 5;
       cleanFilename(processToKill);
       interrupt(0x21, 11, (int)(processToKill-'0'), 0, 0);
+    } else if (strncmp(buffer, execforeground, 15)) {
+      filename1 = buffer + 16;
+      cleanFilename(filename1);
+      interrupt(0x21, 14, filename1, 0, 0);
     } else {
       interrupt(0x21, 0, errorMsg, 0, 0);
     }

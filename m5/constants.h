@@ -9,4 +9,5 @@
 typedef struct ProcessTableEntry {
 	int isActive;
 	int sp;
+  int waiting;
 } ProcessTableEntry;
