@@ -13,7 +13,11 @@ int main()
   char *filename1, *filename2, *filename3, *filename4, *processToKill;
   char fileContentBuffer[MAXIMUM_FILE_SIZE];
   char prompt[8], type[6], execute[9], exit[6], delete[8],
+<<<<<<< Updated upstream
        copy[6], dir[4], create[8], errorMsg[15], newline[3], clear[4], kill[6];
+=======
+       copy[6], dir[4], create[8], errorMsg[15], newline[3], clear[4], changeBG[6], changeFG[6];
+>>>>>>> Stashed changes
   unsigned int i;
   int numSectors;
   prompt[0] = 'S';
@@ -99,6 +103,18 @@ int main()
   kill[3] = 'l';
   kill[4] = ' ';
   kill[5] = '\0';
+  changeBG[0] = 'c';
+  changeBG[1] = 'b';
+  changeBG[2] = 'g';
+  changeBG[3] = ' ';
+  changeBG[4] = ' ';
+  changeBG[5] = '\r';
+  changeFG[0] = 'c';
+  changeFG[1] = 'f';
+  changeFG[2] = 'g';
+  changeFG[3] = ' ';
+  changeFG[4] = ' ';
+  changeFG[5] = '\r';
   enableInterrupts();
   while(1) {
     /* Routine buffer cleanup */
@@ -135,6 +151,10 @@ int main()
       interrupt(0x21, 8, filename2, fileContentBuffer, numSectors);
     } else if (strncmp(buffer, dir, 4)) {
       interrupt(0x21, 9, 0, 0, 0);
+    } else if (strncmp(buffer, changeBG, 4)) {
+      interrupt(0x21, 13, buffer[4], 0, 0);
+    } else if (strncmp(buffer, changeFG, 4)) {
+      interrupt(0x21, 12, buffer[4], 0, 0);
     } else if (strncmp(buffer, clear, 4)){
       interrupt(0x21, 10, 0, 0, 0);
     } else if (strncmp(buffer, create, 7)) {

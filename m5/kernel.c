@@ -24,6 +24,8 @@ void listFile();
 void countFileSectors(int, int *);
 void clearScreen();
 void killProcess(int);
+void changeBGcolor();
+void changeFGcolor();
 
 int currentProcess = 0;
 ProcessTableEntry processes[PROCESS_TABLE_SIZE];
@@ -52,12 +54,21 @@ int main() {
   return 0;
 }
 
+void changeFGcolor(char c) {
+  interrupt(0x10, 0xB*256, 256+c, 0, 0);
+}
+
+void changeBGcolor(char c) {
+  interrupt(0x10, 0xB*256, c, 0, 0);
+}
+
 void clearScreen() {
   int start;
   int i;
   start = 0x8000;
   for(i = 0; i < 25 * 80; i++) {
       putInMemory(0xB000, start, ' ');
+      putInMemory(0xB000, start+1, 0x7);
       start+=2;
   }
 
@@ -227,6 +238,12 @@ void handleInterrupt21(int ax, int bx, int cx, int dx) {
       break;
     case 11:
       killProcess(bx);
+      break;
+    case 12:
+      changeFGcolor(bx);
+      break;
+    case 13:
+      changeBGcolor(bx);
       break;
     case 99:
       countFileSectors(bx, cx);
