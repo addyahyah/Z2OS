@@ -29,7 +29,6 @@ ProcessTableEntry processes[PROCESS_TABLE_SIZE];
 int main() {
   char shell[6];
 
-  int start;
   int i;
 
   for (i=0;i<PROCESS_TABLE_SIZE;i++){
@@ -37,9 +36,9 @@ int main() {
     processes[i].sp = 0xff00;
   }
 
+  makeInterrupt21();
   makeTimerInterrupt();
 
-  makeInterrupt21();
   shell[0] = 's';
   shell[1] = 'h';
   shell[2] = 'e';
@@ -47,6 +46,7 @@ int main() {
   shell[4] = 'l';
   shell[5] = '\0';
   interrupt(0x21, 4, shell, 0, 0);
+  while(1);
   return 0;
 }
 
@@ -476,7 +476,8 @@ void executeProgram(char* name) {
   int result;
 
   for (i = 0; i < PROCESS_TABLE_SIZE; i++) {
-    if (processes[i].isActive == 0) {
+    setKernelDataSegment();
+    if (!(processes[i].isActive)) {
       segment = (i+2) * 0x1000;
       result = readFile(name, buffer);
   
@@ -484,18 +485,14 @@ void executeProgram(char* name) {
         for (j = 0; j < MAXIMUM_FILE_SIZE; j++) {
           putInMemory(segment, j, buffer[j]);
         }
-        setKernelDataSegment();
         initializeProgram(segment);
+        processes[i].isActive=1;
       }
 
-      buffer[0] = 0x35;
-      buffer[1] = '\0';
-      printString(buffer);
-      processes[i].isActive=1;
+      restoreDataSegment();
       break;
     }
   }
-  restoreDataSegment();
 }
 
 void terminate() {
@@ -505,27 +502,36 @@ void terminate() {
 }
 
 void handleTimerInterrupt(int segment, int sp) {
-  char debug[10];
   int current;
-  debug[1] = '\0';
-  debug[0] = 0x30;
-  printString(debug);
-  current = currentProcess;
-  processes[currentProcess].sp = sp;
-  do {
-    currentProcess++;
-    currentProcess = mod(currentProcess, PROCESS_TABLE_SIZE);
-    if (processes[currentProcess].isActive == 0) {
-      continue;
-    } else {
-      printString("Active\r\n\0");
-      segment = (currentProcess+2) * 0x1000;
-      sp = processes[currentProcess].sp;
-      returnFromTimer(segment, sp);
-      break;
+  if (div(segment, 0x1000) > 1) {
+    setKernelDataSegment();
+    current = currentProcess;
+    processes[currentProcess].sp = sp;
+    do {
+      currentProcess++;
+      currentProcess = mod(currentProcess, PROCESS_TABLE_SIZE);
+      if (!(processes[currentProcess].isActive)) {
+        continue;
+      } else {
+        break;
+      }
+    }
+    while (current != currentProcess);
+    segment = (currentProcess+2) * 0x1000;
+    sp = processes[currentProcess].sp;
+    restoreDataSegment();
+  } else {
+    setKernelDataSegment();
+    for (current = 0; current < PROCESS_TABLE_SIZE; current++) {
+      if (processes[currentProcess].isActive) {
+        currentProcess = current;
+        segment = (current + 2) * 0x1000;
+        sp = processes[currentProcess].sp;
+        restoreDataSegment();
+        break;
+      }
     }
   }
-  while (current != currentProcess);
   returnFromTimer(segment, sp);
 }
 void countFileSectors(int filename, int *countPtr) {
