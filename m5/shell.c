@@ -10,10 +10,10 @@ void cleanFilename(char*);
 int main()
 {
   char buffer[READSTRING_MAX_BUFFER_SIZE];
-  char *filename1, *filename2, *filename3, *filename4;
+  char *filename1, *filename2, *filename3, *filename4, *processToKill;
   char fileContentBuffer[MAXIMUM_FILE_SIZE];
   char prompt[8], type[6], execute[9], exit[6], delete[8],
-       copy[6], dir[4], create[8], errorMsg[15], newline[3], clear[4];
+       copy[6], dir[4], create[8], errorMsg[15], newline[3], clear[4], kill[6];
   unsigned int i;
   int numSectors;
   prompt[0] = 'S';
@@ -93,6 +93,12 @@ int main()
   clear[1] = 'l';
   clear[2] = 's';
   clear[3] = '\r';
+  kill[0] = 'k';
+  kill[1] = 'i';
+  kill[2] = 'l';
+  kill[3] = 'l';
+  kill[4] = ' ';
+  kill[5] = '\0';
   enableInterrupts();
   while(1) {
     /* Routine buffer cleanup */
@@ -145,6 +151,10 @@ int main()
         }
       }
       interrupt(0x21, 8, filename1, fileContentBuffer, strlen(fileContentBuffer) / SECTOR_SIZE + 1);
+    } else if (strncmp(buffer, kill, 5)) {
+      processToKill = buffer + 5;
+      cleanFilename(processToKill);
+      interrupt(0x21, 11, (int)(processToKill-'0'), 0, 0);
     } else {
       interrupt(0x21, 0, errorMsg, 0, 0);
     }

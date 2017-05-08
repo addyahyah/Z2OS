@@ -23,6 +23,7 @@ void terminate();
 void listFile();
 void countFileSectors(int, int *);
 void clearScreen();
+void killProcess(int);
 
 int currentProcess = 0;
 ProcessTableEntry processes[PROCESS_TABLE_SIZE];
@@ -223,6 +224,9 @@ void handleInterrupt21(int ax, int bx, int cx, int dx) {
       break;
     case 10:
       clearScreen();
+      break;
+    case 11:
+      killProcess(bx);
       break;
     case 99:
       countFileSectors(bx, cx);
@@ -490,18 +494,17 @@ void executeProgram(char* name) {
   unsigned int i, j, t;
   int segment;
   int result;
-  setKernelDataSegment();
 
+  setKernelDataSegment();
   for (i = 0; i < PROCESS_TABLE_SIZE; i++) {
     if (processes[i].isActive == 0) {
-      t=i;
+      t = i;
       processes[i].sp = 0xFF00;
-  
       break;
     }
   }
-  
   restoreDataSegment();
+
   segment = (t+2) * 0x1000;
   result = readFile(name, buffer);
   if (result == 0) {
@@ -510,7 +513,6 @@ void executeProgram(char* name) {
     }
     initializeProgram(segment);
     setKernelDataSegment();
-
     processes[t].isActive=1;
     restoreDataSegment();
   }
@@ -520,6 +522,12 @@ void terminate() {
   setKernelDataSegment();
   processes[currentProcess].isActive = 0;
   while(1);
+}
+
+void killProcess(int processToKill){
+  setKernelDataSegment();
+  processes[processToKill].isActive = 0;
+  restoreDataSegment();
 }
 
 void handleTimerInterrupt(int segment, int sp) {
