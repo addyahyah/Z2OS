@@ -1,0 +1,12 @@
+Commands:
+
+type <fileName> - print out the content of the given file if exists
+execute <programName> - execute the given program if exists
+exit - quit shell
+delete <filename> - delete the given file if exists
+copy <srcFileName> <destFileName> - copy the content in the file <srcFileName> to <destFileName>
+dir - list file names in the directory as well as the corresponding number of sectors for each file
+create <filename> - create a text file with the content provided by the user
+cls - clear the screen
+kill <process id> - kill the process with the given process id
+help - display all the available commands

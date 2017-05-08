@@ -13,11 +13,7 @@ int main()
   char *filename1, *filename2, *filename3, *filename4, *processToKill;
   char fileContentBuffer[MAXIMUM_FILE_SIZE];
   char prompt[8], type[6], execute[9], exit[6], delete[8],
-<<<<<<< Updated upstream
-       copy[6], dir[4], create[8], errorMsg[15], newline[3], clear[4], kill[6];
-=======
-       copy[6], dir[4], create[8], errorMsg[15], newline[3], clear[4], changeBG[6], changeFG[6];
->>>>>>> Stashed changes
+       copy[6], dir[4], create[8], errorMsg[15], newline[3], clear[4], kill[6], changeBG[6], changeFG[6];
   unsigned int i;
   int numSectors;
   prompt[0] = 'S';
