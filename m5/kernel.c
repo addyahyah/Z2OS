@@ -471,27 +471,32 @@ void writeFile(char* name, char* buffer, int numberOfSectors) {
 
 void executeProgram(char* name) {
   char buffer[MAXIMUM_FILE_SIZE];
-  unsigned int i, j;
+  unsigned int i, j, t;
   int segment;
   int result;
+  setKernelDataSegment();
 
   for (i = 0; i < PROCESS_TABLE_SIZE; i++) {
-    setKernelDataSegment();
-    if (!(processes[i].isActive)) {
-      segment = (i+2) * 0x1000;
-      result = readFile(name, buffer);
+    if (processes[i].isActive == 0) {
+      t=i;
+      processes[i].sp = 0xFF00;
   
-      if (result == 0) {
-        for (j = 0; j < MAXIMUM_FILE_SIZE; j++) {
-          putInMemory(segment, j, buffer[j]);
-        }
-        initializeProgram(segment);
-        processes[i].isActive=1;
-      }
-
-      restoreDataSegment();
       break;
     }
+  }
+  
+  restoreDataSegment();
+  segment = (t+2) * 0x1000;
+  result = readFile(name, buffer);
+  if (result == 0) {
+    for (j = 0; j < MAXIMUM_FILE_SIZE; j++) {
+      putInMemory(segment, j, buffer[j]);
+    }
+    initializeProgram(segment);
+    setKernelDataSegment();
+
+    processes[t].isActive=1;
+    restoreDataSegment();
   }
 }
 
