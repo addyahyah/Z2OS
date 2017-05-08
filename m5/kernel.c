@@ -22,6 +22,7 @@ void executeProgram(char*);
 void terminate();
 void listFile();
 void countFileSectors(int, int *);
+void clearScreen();
 
 int currentProcess = 0;
 ProcessTableEntry processes[PROCESS_TABLE_SIZE];
@@ -48,6 +49,18 @@ int main() {
   interrupt(0x21, 4, shell, 0, 0);
   while(1);
   return 0;
+}
+
+void clearScreen() {
+  int start;
+  int i;
+  start = 0x8000;
+  for(i = 0; i < 25 * 80; i++) {
+      putInMemory(0xB000, start, ' ');
+      start+=2;
+  }
+
+  interrupt(0x10, 2*256, 0, 0, 0);
 }
 
 void listFile() {
@@ -207,6 +220,9 @@ void handleInterrupt21(int ax, int bx, int cx, int dx) {
       break;
     case 9:
       listFile();
+      break;
+    case 10:
+      clearScreen();
       break;
     case 99:
       countFileSectors(bx, cx);

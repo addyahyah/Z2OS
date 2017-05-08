@@ -13,7 +13,7 @@ int main()
   char *filename1, *filename2, *filename3, *filename4;
   char fileContentBuffer[MAXIMUM_FILE_SIZE];
   char prompt[8], type[6], execute[9], exit[6], delete[8],
-       copy[6], dir[4], create[8], errorMsg[15], newline[3];
+       copy[6], dir[4], create[8], errorMsg[15], newline[3], clear[4];
   unsigned int i;
   int numSectors;
   prompt[0] = 'S';
@@ -89,6 +89,10 @@ int main()
   newline[0] = '\r';
   newline[1] = '\n';
   newline[2] = '\0';
+  clear[0] = 'c';
+  clear[1] = 'l';
+  clear[2] = 's';
+  clear[3] = '\r';
   enableInterrupts();
   while(1) {
     /* Routine buffer cleanup */
@@ -125,6 +129,8 @@ int main()
       interrupt(0x21, 8, filename2, fileContentBuffer, numSectors);
     } else if (strncmp(buffer, dir, 4)) {
       interrupt(0x21, 9, 0, 0, 0);
+    } else if (strncmp(buffer, clear, 4)){
+      interrupt(0x21, 10, 0, 0, 0);
     } else if (strncmp(buffer, create, 7)) {
       filename1 = buffer + 7;
       cleanFilename(filename1);
