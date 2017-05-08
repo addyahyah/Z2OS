@@ -549,8 +549,8 @@ void executeProgram(char* name) {
 void terminate() {
   unsigned int i;
   setKernelDataSegment();
-  processes[currentProcess].isActive = 0;
   processes[currentProcess].waiting = -1;
+  processes[currentProcess].isActive = 0;
   for (i = 0; i < PROCESS_TABLE_SIZE; i++) {
     if (processes[i].waiting == currentProcess) {
       processes[i].waiting = -1;

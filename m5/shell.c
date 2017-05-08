@@ -148,7 +148,7 @@ int main()
       cleanFilename(filename1);
       interrupt(0x21, 4, filename1, 0, 0);
     } else if (strncmp(buffer, exit, 5)) {
-      return 0;
+      interrupt(0x21, 5, 0, 0, 0);
     } else if (strncmp(buffer, delete, 7)) {
       filename1 = buffer + 7;
       cleanFilename(filename1);
