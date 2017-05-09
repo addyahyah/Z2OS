@@ -24,8 +24,8 @@ void listFile();
 void countFileSectors(int, int *);
 void clearScreen();
 void killProcess(int);
-void changeBGcolor();
-void changeFGcolor();
+void changeBGcolor(char f, char b);
+void changeFGcolor(char f);
 void blockExecuteProgram(char*);
 
 int currentProcess = 0;
@@ -56,12 +56,29 @@ int main() {
   return 0;
 }
 
-void changeFGcolor(char c) {
-  interrupt(0x10, 0xB*256, 256+c, 0, 0);
+void changeFGcolor(char f, char b) {
+  unsigned int fgColor, bgColor, finalVal;
+  clearScreen();
+  if (f < 0x61) {
+    fgColor = f-'0';
+  } else if (f < 0x61) {
+    fgColor = f - 0x41 + 10;
+  } else {
+    fgColor = f - 0x61 + 10;
+  }
+  if (b < 0x41) {
+    bgColor = b-'0';
+  } else if (b < 0x61) {
+    bgColor = b - 0x41 + 10;
+  } else {
+    bgColor = b - 0x61 + 10;
+  }
+  finalVal = (bgColor << 4) + fgColor;
+  interrupt(0x10, 0x6*256, 256 * finalVal, 0, 256*25+80);
 }
 
-void changeBGcolor(char c) {
-  interrupt(0x10, 0xB*256, c, 0, 0);
+void changeBGcolor(char b) {
+  interrupt(0x10, 0xB*256, b, 0, 0);
 }
 
 void clearScreen() {
@@ -242,7 +259,7 @@ void handleInterrupt21(int ax, int bx, int cx, int dx) {
       killProcess(bx);
       break;
     case 12:
-      changeFGcolor(bx);
+      changeFGcolor(bx, cx);
       break;
     case 13:
       changeBGcolor(bx);
