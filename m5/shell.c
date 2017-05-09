@@ -14,7 +14,7 @@ int main()
   char fileContentBuffer[MAXIMUM_FILE_SIZE];
   char prompt[8], type[6], execute[9], exit[6], delete[8],
        copy[6], dir[4], create[8], errorMsg[15], newline[3],
-       clear[4], kill[6], changeBG[6], changeFG[6], execforeground[16];
+       clear[4], kill[6], changeBG[5], changeFG[5], execforeground[16];
   unsigned int i;
   int numSectors;
   prompt[0] = 'S';
@@ -64,7 +64,10 @@ int main()
   dir[1] = 'i';
   dir[2] = 'r';
   dir[3] = '\r';
-  create[0] = 'c';
+  create[0] = 'c'; changeFG[1] = 'f';
+  changeFG[2] = 'g';
+  changeFG[3] = ' ';
+  changeFG[4] = ' ';
   create[1] = 'r';
   create[2] = 'e';
   create[3] = 'a';
@@ -104,14 +107,12 @@ int main()
   changeBG[1] = 'b';
   changeBG[2] = 'g';
   changeBG[3] = ' ';
-  changeBG[4] = ' ';
-  changeBG[5] = '\r';
+  changeBG[4] = '\0';
   changeFG[0] = 'c';
   changeFG[1] = 'f';
   changeFG[2] = 'g';
   changeFG[3] = ' ';
-  changeFG[4] = ' ';
-  changeFG[5] = '\r';
+  changeFG[4] = '\0';
   execforeground[0] = 'e';
   execforeground[1] = 'x';
   execforeground[2] = 'e';
@@ -167,7 +168,7 @@ int main()
     } else if (strncmp(buffer, changeBG, 4)) {
       interrupt(0x21, 13, buffer[4], 0, 0);
     } else if (strncmp(buffer, changeFG, 4)) {
-      interrupt(0x21, 12, buffer[4], 0, 0);
+      interrupt(0x21, 12, buffer[4], buffer[6], 0);
     } else if (strncmp(buffer, clear, 4)){
       interrupt(0x21, 10, 0, 0, 0);
     } else if (strncmp(buffer, create, 7)) {
