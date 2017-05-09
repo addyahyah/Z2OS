@@ -22,4 +22,4 @@ lib_asm.o: lib.asm
 	as86 lib.asm -o lib_asm.o
 
 clean:
-	rm -rf kernel shell *.o floppya.img bochsout.txt bootload loadFile *~
+	rm -rf kernel shell *.o floppya.img bochsout.txt bootload loadFile stringMaker *~
