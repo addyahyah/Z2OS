@@ -612,10 +612,10 @@ void handleTimerInterrupt(int segment, int sp) {
   } else {
     setKernelDataSegment();
     for (current = 0; current < PROCESS_TABLE_SIZE; current++) {
-      if (processes[currentProcess].isActive) {
+      if (processes[current].isActive) {
         currentProcess = current;
         segment = (current + 2) * 0x1000;
-        sp = processes[currentProcess].sp;
+        sp = processes[current].sp;
         restoreDataSegment();
         break;
       }
