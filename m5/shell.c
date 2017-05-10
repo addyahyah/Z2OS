@@ -64,7 +64,8 @@ int main()
   dir[1] = 'i';
   dir[2] = 'r';
   dir[3] = '\r';
-  create[0] = 'c'; changeFG[1] = 'f';
+  create[0] = 'c';
+  changeFG[1] = 'f';
   changeFG[2] = 'g';
   changeFG[3] = ' ';
   changeFG[4] = ' ';
