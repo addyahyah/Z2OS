@@ -187,9 +187,7 @@ int main()
       }
       interrupt(0x21, 8, filename1, fileContentBuffer, strlen(fileContentBuffer) / SECTOR_SIZE + 1);
     } else if (strncmp(buffer, kill, 5)) {
-      processToKill = buffer + 5;
-      cleanFilename(processToKill);
-      interrupt(0x21, 11, (int)(processToKill-'0'), 0, 0);
+      interrupt(0x21, 11, ((int) buffer[5]-0x30), 0, 0);
     } else if (strncmp(buffer, execforeground, 15)) {
       filename1 = buffer + 15;
       cleanFilename(filename1);

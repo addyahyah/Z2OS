@@ -534,16 +534,22 @@ void executeProgram(char* name) {
   int segment;
   int result;
 
-  setKernelDataSegment();
   for (i = 0; i < PROCESS_TABLE_SIZE; i++) {
+    setKernelDataSegment();
     if (processes[i].isActive == 0 && (processes[i].waiting < 0)) {
-      t = i;
+      restoreDataSegment();
+      setKernelDataSegment();
       processes[i].sp = 0xFF00;
+      restoreDataSegment();
+      setKernelDataSegment();
       processes[i].waiting = -1;
+      restoreDataSegment();
+      t = i;
       break;
+    } else {
+      restoreDataSegment();
     }
   }
-  restoreDataSegment();
 
   if (i >= PROCESS_TABLE_SIZE) {
     /* No free slots */
@@ -567,12 +573,21 @@ void terminate() {
   unsigned int i;
   setKernelDataSegment();
   processes[currentProcess].waiting = -1;
+  restoreDataSegment();
+  setKernelDataSegment();
   processes[currentProcess].isActive = 0;
+  restoreDataSegment();
   for (i = 0; i < PROCESS_TABLE_SIZE; i++) {
+    setKernelDataSegment();
     if (processes[i].waiting == currentProcess) {
+      restoreDataSegment();
+      setKernelDataSegment();
       processes[i].waiting = -1;
+      restoreDataSegment();
+      setKernelDataSegment();
       processes[i].isActive = 1;
     }
+    restoreDataSegment();
   }
   while(1);
 }
@@ -581,13 +596,21 @@ void killProcess(int processToKill){
   unsigned int i;
   setKernelDataSegment();
   processes[processToKill].isActive = 0;
+  restoreDataSegment();
   for (i = 0; i < PROCESS_TABLE_SIZE; i++) {
+    setKernelDataSegment();
     if (processes[i].waiting == processToKill) {
+      restoreDataSegment();
+      setKernelDataSegment();
       processes[i].waiting = -1;
+      restoreDataSegment();
+      setKernelDataSegment();
       processes[i].isActive = 1;
+      restoreDataSegment();
+    } else {
+      restoreDataSegment();
     }
   }
-  restoreDataSegment();
 }
 
 void handleTimerInterrupt(int segment, int sp) {
@@ -660,15 +683,22 @@ void blockExecuteProgram(char* name) {
 
   setKernelDataSegment();
   parent = currentProcess;
+  restoreDataSegment();
   for (i = 0; i < PROCESS_TABLE_SIZE; i++) {
     if (processes[i].isActive == 0 && (processes[i].waiting < 0)) {
-      t = i;
+      restoreDataSegment();
+      setKernelDataSegment();
       processes[t].sp = 0xFF00;
+      restoreDataSegment();
+      setKernelDataSegment();
       processes[t].waiting = -1;
+      restoreDataSegment();
+      t = i;
       break;
+    } else {
+      restoreDataSegment();
     }
   }
-  restoreDataSegment();
 
   if (i >= PROCESS_TABLE_SIZE) {
     /* No free slots */
@@ -684,7 +714,11 @@ void blockExecuteProgram(char* name) {
     initializeProgram(segment);
     setKernelDataSegment();
     processes[parent].waiting = t;
+    restoreDataSegment();
+    setKernelDataSegment();
     processes[parent].isActive = 0;
+    restoreDataSegment();
+    setKernelDataSegment();
     processes[t].isActive = 1;
     restoreDataSegment();
   }
