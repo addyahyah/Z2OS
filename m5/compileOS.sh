@@ -16,4 +16,5 @@ gcc -o loadFile loadFile.c
 ./loadFile tstpr2
 ./loadFile shell
 ./loadFile phello
+./loadFile helpMessage.txt
 bochs -f opsys.bxrc

@@ -14,7 +14,7 @@ int main()
   char fileContentBuffer[MAXIMUM_FILE_SIZE];
   char prompt[8], type[6], execute[9], exit[6], delete[8],
        copy[6], dir[4], create[8], errorMsg[15], newline[3],
-       clear[4], kill[6], changeBG[5], changeFG[5], execforeground[16];
+       clear[4], kill[6], changeBG[5], changeFG[5], execforeground[16], help[6];
   unsigned int i;
   int numSectors;
   prompt[0] = 'S';
@@ -31,6 +31,12 @@ int main()
   type[3] = 'e';
   type[4] = ' ';
   type[5] = '\0';
+  help[0] = 'h';
+  help[1] = 'e';
+  help[2] = 'l';
+  help[3] = 'p';
+  help[4] = '\r';
+  help[5] = '\0';
   execute[0] = 'e';
   execute[1] = 'x';
   execute[2] = 'e';
@@ -188,6 +194,8 @@ int main()
       filename1 = buffer + 15;
       cleanFilename(filename1);
       interrupt(0x21, 14, filename1, 0, 0);
+    } else if (strncmp(buffer, help, 5)) {
+      interrupt(0x21, 15, 0, 0, 0);
     } else {
       interrupt(0x21, 0, errorMsg, 0, 0);
     }

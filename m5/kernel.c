@@ -27,6 +27,7 @@ void killProcess(int);
 void changeBGcolor(char f, char b);
 void changeFGcolor(char f);
 void blockExecuteProgram(char*);
+void displayHelpMessage();
 
 int currentProcess = 0;
 ProcessTableEntry processes[PROCESS_TABLE_SIZE];
@@ -267,6 +268,8 @@ void handleInterrupt21(int ax, int bx, int cx, int dx) {
     case 14:
       blockExecuteProgram(bx);
       break;
+    case 15:
+      displayHelpMessage();
     case 99:
       countFileSectors(bx, cx);
       break;
@@ -723,4 +726,29 @@ void blockExecuteProgram(char* name) {
     processes[t].isActive = 1;
     restoreDataSegment();
   }
+}
+
+void displayHelpMessage() {
+  char helpMessage[12];
+  char buffer[MAXIMUM_FILE_SIZE];
+  int result;
+
+  helpMessage[0] = 'h';
+  helpMessage[1] = 'e';
+  helpMessage[2] = 'l';
+  helpMessage[3] = 'p';
+  helpMessage[4] = 'M';
+  helpMessage[5] = 'e';
+  helpMessage[6] = 's';
+  helpMessage[7] = 's';
+  helpMessage[8] = 'a';
+  helpMessage[9] = 'g';
+  helpMessage[10] = 'e';
+  helpMessage[11] = '\0';
+
+  result = readFile(helpMessage, buffer, 0);
+
+  if(result == 0){
+    printString(buffer);
+  }   
 }
