@@ -685,6 +685,7 @@ void blockExecuteProgram(char* name) {
   parent = currentProcess;
   restoreDataSegment();
   for (i = 0; i < PROCESS_TABLE_SIZE; i++) {
+    setKernelDataSegment();
     if (processes[i].isActive == 0 && (processes[i].waiting < 0)) {
       restoreDataSegment();
       setKernelDataSegment();
