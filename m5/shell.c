@@ -64,10 +64,7 @@ int main()
   dir[1] = 'i';
   dir[2] = 'r';
   dir[3] = '\r';
-  create[0] = 'c'; changeFG[1] = 'f';
-  changeFG[2] = 'g';
-  changeFG[3] = ' ';
-  changeFG[4] = ' ';
+  create[0] = 'c';
   create[1] = 'r';
   create[2] = 'e';
   create[3] = 'a';
@@ -186,9 +183,7 @@ int main()
       }
       interrupt(0x21, 8, filename1, fileContentBuffer, strlen(fileContentBuffer) / SECTOR_SIZE + 1);
     } else if (strncmp(buffer, kill, 5)) {
-      processToKill = buffer + 5;
-      cleanFilename(processToKill);
-      interrupt(0x21, 11, (int)(processToKill-'0'), 0, 0);
+      interrupt(0x21, 11, ((int) buffer[5]-0x30), 0, 0);
     } else if (strncmp(buffer, execforeground, 15)) {
       filename1 = buffer + 15;
       cleanFilename(filename1);

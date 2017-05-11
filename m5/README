@@ -8,6 +8,7 @@ $ ./compileOS
 ### Instructions for testing and using the operating system
 $ ./compileOS
 
+<<<<<<< HEAD
 testing handleTimerInterrupt:
 1. in the shell, enter the following command:
 execute phello
