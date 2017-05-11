@@ -1,0 +1,64 @@
+Team members: Jake Patterson, Yuzong Gao, Luwen Zhang, Zhou Zhou
+
+### in this milestone we added a scheduler that can interrupt a process and save its state, find a new process, and start executing it, and memory management to accomplish multitasking. 
+
+### Instructions for building your operating system
+$ ./compileOS
+
+### Instructions for testing and using the operating system
+$ ./compileOS
+
+testing handleTimerInterrupt:
+1. in the shell, enter the following command:
+execute phello
+
+2. While "Hello Wolrd" is printing, enter the following command:
+dir
+
+3. List of filenames should be displayed
+
+
+testing killProcess:
+1. in the shell, execute the following command:
+execute phello
+
+2. Then quickly type the following command
+kill 1
+
+3. phello program should stop printing and shell is back.
+
+
+testing blockExecuteProgram:
+1. in the shell, execute the following command:
+execforeground shell
+
+2. Two shell prompts will show up. Then type other regular commands. For example,  
+dir
+
+3. list of filenames will show up. To exit foreground, type the following command:
+exit
+
+
+### Bugs or deficiencies
+1. Command input mismatching. If a user were to rapidly enter in commands such as asd, sdskf, sdoi, eijk, sdlk, in rapid succession, a subsequent valid command such as ‘dir’ may fail. We believe this is because of a mismatch between the shell program handling the interrupt that prints out ‘Bad Command!’ and polling for input on the subsequent key interrupt. Resolution: in order to fix this bug, simply restart the OS.
+
+2. The shell’s ‘dir’ command has a known limitation with regards to sector size. As it stands, there cannot be more than 99 sectors for the dir command to execute successfully. This exists because the character array is statically allocated so many bits, which only allocates up to two character slots for displaying the size of a file as a number of sectors in the current directory.
+
+### Additional features that we implemented
+1. Exit command
+SHELL> exit
+
+2. Clear screen command
+SHELL> cls
+
+3. Print size as a number of sectors for dir command
+SHELL> dir
+
+4. Option to change foreground color
+SHELL> cfg 0 F
+
+5. Option to change background color
+SHELL> cbg A
+
+6. Help command that lists and describes available commands
+SHELL> help
